@@ -5,9 +5,8 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
-    // The repository name is required because this site is served from
-    // https://livingsan.github.io/livingsan/ on GitHub Pages.
-    base: '/livingsan/',
+    // This is a GitHub Pages user site, served from the domain root.
+    base: '/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
