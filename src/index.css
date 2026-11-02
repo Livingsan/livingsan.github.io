@@ -1,0 +1,242 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .font-signature {
+    font-family: 'Caveat', 'Alex Brush', cursive;
+  }
+  .font-display {
+    font-family: 'Syne', sans-serif;
+  }
+  .font-body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+}
+
+:root {
+  /* ================= DARK THEME (DEFAULT) ================= */
+  --bg-main: #0b0a0a;
+  --bg-alt: #100f0e;
+  --bg-card: #121110;
+  --bg-card-alt: #151413;
+  --bg-card-panel: #181715;
+  --bg-card-subtle: #1f1e1b;
+  --bg-header: rgba(11, 10, 10, 0.90);
+  --bg-modal: #141312;
+  --bg-modal-panel: #181715;
+  --bg-modal-viewer: #0a0909;
+  --bg-overlay: rgba(0, 0, 0, 0.88);
+  --bg-tag: #181715;
+  --bg-tag-subtle: #1e1c1a;
+  --bg-input: #181715;
+  --bg-input-border: rgba(224, 213, 193, 0.2);
+
+  --text-primary: #e0d5c1;
+  --text-primary-strong: #ffffff;
+  --text-secondary: rgba(224, 213, 193, 0.72);
+  --text-muted: rgba(224, 213, 193, 0.5);
+  --text-faint: rgba(224, 213, 193, 0.35);
+
+  --hero-name-first: #d9c8b4;
+  --hero-name-last: #ffffff;
+
+  --accent-primary: #c81d25;
+  --accent-hover: #b0171e;
+  --accent-subtle: rgba(200, 29, 37, 0.15);
+  --accent-border: rgba(200, 29, 37, 0.35);
+  --border-skill-hover: rgba(200, 29, 37, 0.5);
+  --shadow-skill-hover: 0 0 20px rgba(200, 29, 37, 0.2);
+
+  --border-color: rgba(224, 213, 193, 0.1);
+  --border-subtle: rgba(224, 213, 193, 0.15);
+  --border-strong: rgba(224, 213, 193, 0.25);
+
+  --decorative-dots: #c81d25;
+  --decorative-dots-opacity: 0.15;
+
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.45);
+  --shadow-card-hover: 0 10px 30px rgba(0, 0, 0, 0.6);
+  --shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+
+  --scrollbar-track: #0b0a0a;
+  --scrollbar-thumb: #22201e;
+  --scrollbar-thumb-hover: #c81d25;
+}
+
+[data-theme="light"],
+.light {
+  /* ================= LIGHT THEME (ENHANCED EDITORIAL LUXURY PALETTE) ================= */
+  --bg-main: #F8F6F2;
+  --bg-alt: #EFEBE4;
+  --bg-card: #FFFFFF;
+  --bg-card-alt: #FFFFFF;
+  --bg-card-panel: #FFFFFF;
+  --bg-card-subtle: #F0EDE7;
+  --bg-header: rgba(248, 246, 242, 0.92);
+  --bg-modal: #FFFFFF;
+  --bg-modal-panel: #F8F6F2;
+  --bg-modal-viewer: #EFEBE4;
+  --bg-overlay: rgba(25, 25, 25, 0.65);
+  --bg-tag: #F0EDE7;
+  --bg-tag-subtle: #F0EDE7;
+  --bg-input: #FFFFFF;
+  --bg-input-border: #DED9D1;
+
+  --text-primary: #191919;
+  --text-primary-strong: #191919;
+  --text-secondary: #625D57;
+  --text-muted: #7E7870;
+  --text-faint: #A49E95;
+
+  /* Editorial two-tone headline hierarchy matching dark mode craft */
+  --hero-name-first: #736B63;
+  --hero-name-last: #191919;
+
+  --accent-primary: #D91F2B;
+  --accent-hover: #B81722;
+  --accent-subtle: rgba(217, 31, 43, 0.08);
+  --accent-border: rgba(217, 31, 43, 0.28);
+  --border-skill-hover: rgba(217, 31, 43, 0.5);
+  --shadow-skill-hover: 0 4px 20px rgba(217, 31, 43, 0.15);
+
+  --border-color: #DED9D1;
+  --border-subtle: #E8E3DB;
+  --border-strong: #CDC6BC;
+
+  --decorative-dots: #E9C9C9;
+  --decorative-dots-opacity: 0.85;
+
+  /* Rich, tactile multi-layer shadows */
+  --shadow-card: 0 1px 3px rgba(25, 25, 25, 0.04), 0 4px 14px rgba(25, 25, 25, 0.03);
+  --shadow-card-hover: 0 16px 36px -6px rgba(25, 25, 25, 0.09), 0 4px 14px -2px rgba(217, 31, 43, 0.08);
+  --shadow-modal: 0 24px 48px -12px rgba(25, 25, 25, 0.18);
+
+  --scrollbar-track: #F8F6F2;
+  --scrollbar-thumb: #DED9D1;
+  --scrollbar-thumb-hover: #B81722;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  overflow-x: hidden;
+  transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Custom fine scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* Smooth, subtle theme transition */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease, fill 0.2s ease, stroke 0.2s ease, box-shadow 0.25s ease !important;
+  transition-delay: 0s !important;
+}
+
+/* Accessibility: Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Focus visibility for keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--accent-primary) !important;
+  outline-offset: 2px !important;
+}
+
+/* Signature text glow and layering */
+.signature-overlay {
+  font-family: 'Caveat', cursive;
+  color: var(--accent-primary);
+  text-shadow: 0 0 1px var(--accent-subtle);
+}
+
+/* Glassmorphism containers with subtle border */
+.glass-panel {
+  background: var(--bg-header);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+}
+
+/* Card hover glow */
+.card-hover {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-hover:hover {
+  border-color: var(--accent-border);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.hero-role-entry {
+  animation: hero-role-enter 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.hero-typewriter {
+  display: inline-flex;
+  flex: 0 1 22ch;
+  align-items: center;
+  width: 22ch;
+  max-width: calc(100% - 2rem);
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-family: monospace;
+  font-size: clamp(0.75rem, 2.8vw, 0.875rem);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.hero-typewriter-cursor {
+  flex: 0 0 0.55em;
+  height: 1.05em;
+  margin-left: 0.12em;
+  background-color: var(--accent-primary);
+  animation: hero-cursor-blink 1s steps(2, start) infinite;
+}
+
+.hero-typewriter-copy {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: clip;
+}
+
+@keyframes hero-role-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hero-cursor-blink {
+  to {
+    visibility: hidden;
+  }
+}
