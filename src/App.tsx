@@ -1091,9 +1091,9 @@ export default function App() {
       title: 'FULL-STACK DEVELOPER • AI & LLM ENTHUSIAST',
       websiteUrl: 'https://livingsan.github.io/',
       socialHandle: '',
-      contactEmail: 'livingsan0220@gmail.com',
+      contactEmail: 'rlivingsan@gmail.com',
       location: 'Colombo, Sri Lanka',
-      contactPhone: '+94 77 000 0000',
+      contactPhone: '0743113022',
       bio: 'Building full-stack applications and AI-powered solutions that solve real-world problems. I develop responsive web applications, secure REST APIs, and data-driven systems using React, Java Spring Boot, Node.js, and Python. I also integrate locally hosted LLMs and RAG pipelines to build practical, privacy-conscious AI applications.',
       fullAbout: 'Building full-stack applications and AI-powered solutions that solve real-world problems. I develop responsive web applications, secure REST APIs, and data-driven systems using React, Java Spring Boot, Node.js, and Python. I also integrate locally hosted LLMs and RAG pipelines to build practical, privacy-conscious AI applications.',
       avatarUrl: '/assets/aistudio/profile.jpg',
@@ -1129,12 +1129,12 @@ export default function App() {
           parsed.location = 'Colombo, Sri Lanka';
         }
         // Migrate email (including hello@reallygreatsite.com and example placeholders)
-        if (!parsed.contactEmail || parsed.contactEmail.includes('reallygreatsite') || parsed.contactEmail === 'your.email@example.com') {
-          parsed.contactEmail = 'livingsan0220@gmail.com';
+        if (!parsed.contactEmail || parsed.contactEmail.includes('reallygreatsite') || parsed.contactEmail === 'your.email@example.com' || parsed.contactEmail === 'rlivingsan.com') {
+          parsed.contactEmail = 'rlivingsan@gmail.com';
         }
         // Migrate phone
-        if (!parsed.contactPhone || parsed.contactPhone.includes('555') || parsed.contactPhone === '+1 (555) 019-2834') {
-          parsed.contactPhone = '+94 77 000 0000';
+        if (!parsed.contactPhone || parsed.contactPhone.includes('555') || parsed.contactPhone === '+1 (555) 019-2834' || parsed.contactPhone === '+94 74 3113022') {
+          parsed.contactPhone = '0743113022';
         }
         if (!parsed.websiteUrl || parsed.websiteUrl.includes('reallygreatsite') || parsed.websiteUrl === '') {
           parsed.websiteUrl = 'https://livingsan.github.io/';
@@ -2049,8 +2049,8 @@ export default function App() {
               
               {/* Primary Download Resume Button */}
               <a 
-                href="/resume.pdf"
-                download="Rajendran-Livingsan-Resume.pdf"
+                href="/RAJENDRAN LIVINGSAN.pdf"
+                download="RAJENDRAN-LIVINGSAN-CV.pdf"
                 className="inline-flex items-center gap-2 px-5 py-3.5 bg-[var(--accent-primary)] hover:bg-[var(--accent-hover)] text-white font-semibold text-xs sm:text-sm tracking-wide rounded-xl shadow-md shadow-[var(--accent-primary)]/20 hover:shadow-lg hover:shadow-[var(--accent-primary)]/30 transition-all duration-200 active:scale-[0.98] border border-[var(--accent-primary)] cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               >
                 <FileText className="w-4 h-4" />
@@ -2945,7 +2945,7 @@ export default function App() {
                     </div>
                     <div>
                       <div className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-mono font-semibold">EMAIL ADDRESS</div>
-                      <div className="min-w-0 [overflow-wrap:anywhere] text-xs sm:text-sm font-mono text-[var(--text-primary)] font-medium">{profile.contactEmail || 'livingsan0220@gmail.com'}</div>
+                      <div className="min-w-0 [overflow-wrap:anywhere] text-xs sm:text-sm font-mono text-[var(--text-primary)] font-medium">{profile.contactEmail || 'rlivingsan@gmail.com'}</div>
                     </div>
                   </div>
                   <button
@@ -2975,7 +2975,7 @@ export default function App() {
                   </div>
                   <div>
                     <div className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-mono font-semibold">CONTACT NUMBER</div>
-                    <div className="text-xs sm:text-sm font-mono text-[var(--text-primary)] font-medium">{profile.contactPhone || '+94 77 000 0000'}</div>
+                    <div className="text-xs sm:text-sm font-mono text-[var(--text-primary)] font-medium">{profile.contactPhone || '0743113022'}</div>
                   </div>
                 </div>
               </div>
