@@ -1118,6 +1118,16 @@ export default function App() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
+
+        // ── Migration v3: force-update contact email & phone ──────────────
+        // Bumping _migrationVersion guarantees the live site clears any
+        // stale localStorage value regardless of what was previously stored.
+        if (!parsed._migrationVersion || parsed._migrationVersion < 3) {
+          parsed.contactEmail = 'rlivingsan@gmail.com';
+          parsed.contactPhone = '0743113022';
+          parsed._migrationVersion = 3;
+        }
+
         // Migrate old names
         if (parsed.firstName === 'RAJ' || parsed.signatureName === 'RAJ LIV' || !parsed.firstName) {
           parsed.firstName = 'RAJENDRAN';
