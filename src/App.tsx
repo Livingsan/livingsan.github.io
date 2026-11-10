@@ -99,11 +99,138 @@ export interface TechStackCategory {
   technologies: string;
 }
 
+interface Certification {
+  id: string;
+  issuer: string;
+  completionDate?: string;
+  title: string;
+  description: string;
+  image?: string;
+  certificateUrl?: string;
+}
+
+const certifications: Certification[] = [
+  {
+    id: 'develop-ai-agent-microsoft-agent-framework',
+    issuer: 'Microsoft Learn',
+    completionDate: 'November 5, 2026',
+    title: 'Develop an AI agent with Microsoft Agent Framework',
+    description: 'Completed the Microsoft Learn course on developing an AI agent with Microsoft Agent Framework.',
+    certificateUrl: '/certificates/develop-ai-agent-microsoft-agent-framework.pdf',
+  },
+  {
+    id: 'plan-ai-agent-solution',
+    issuer: 'Microsoft Learn',
+    completionDate: 'November 5, 2026',
+    title: 'Plan an AI agent solution',
+    description: 'Completed the Microsoft Learn course on planning an AI agent solution.',
+    certificateUrl: '/certificates/plan-ai-agent-solution.pdf',
+  },
+  {
+    id: 'discover-azure-ai-agents-a2a',
+    issuer: 'Microsoft Learn',
+    completionDate: 'November 5, 2026',
+    title: 'Discover Azure AI Agents with A2A',
+    description: 'Completed the Microsoft Learn course on Azure AI Agents with A2A.',
+    certificateUrl: '/certificates/discover-azure-ai-agents-a2a.pdf',
+  },
+  {
+    id: 'work-smarter-with-ai',
+    issuer: 'Microsoft Learn',
+    completionDate: 'November 4, 2026',
+    title: 'Work smarter with AI',
+    description: 'Completed the Microsoft Learn course on working smarter with AI.',
+    certificateUrl: '/certificates/work-smarter-with-ai.pdf',
+  },
+  {
+    id: 'agentic-workflows',
+    issuer: 'SoloLearn',
+    completionDate: 'October 31, 2026',
+    title: 'Agentic Workflows',
+    description: 'Completed the course, demonstrating theoretical and practical understanding of agentic workflows.',
+    image: '/certificates/agentic-workflows.jpg',
+    certificateUrl: '/certificates/agentic-workflows.pdf',
+  },
+  {
+    id: 'generative-ai-in-practice',
+    issuer: 'SoloLearn',
+    completionDate: 'October 31, 2026',
+    title: 'Generative AI in Practice',
+    description: 'Completed the course, demonstrating theoretical and practical understanding of generative AI.',
+    image: '/certificates/generative-ai-in-practice.jpg',
+    certificateUrl: '/certificates/generative-ai-in-practice.pdf',
+  },
+  {
+    id: 'introduction-to-llms',
+    issuer: 'SoloLearn',
+    completionDate: 'October 31, 2026',
+    title: 'Introduction to LLMs',
+    description: 'Completed the course, demonstrating theoretical and practical understanding of large language models.',
+    image: '/certificates/introduction-to-llms.jpg',
+    certificateUrl: '/certificates/introduction-to-llms.pdf',
+  },
+  {
+    id: 'machine-learning-for-beginners',
+    issuer: 'SoloLearn',
+    completionDate: 'October 31, 2026',
+    title: 'Machine Learning for Beginners',
+    description: 'Completed the course, demonstrating theoretical and practical understanding of machine learning.',
+    image: '/certificates/machine-learning-for-beginners.jpg',
+    certificateUrl: '/certificates/machine-learning-for-beginners.pdf',
+  },
+  {
+    id: 'python-developer',
+    issuer: 'SoloLearn',
+    completionDate: 'November 1, 2026',
+    title: 'Python Developer',
+    description: 'Successfully completed the course, demonstrating theoretical and practical understanding of Python development.',
+    image: '/certificates/python-developer.jpg',
+    certificateUrl: '/certificates/python-developer.pdf',
+  },
+  {
+    id: 'java-intermediate',
+    issuer: 'SoloLearn',
+    completionDate: 'October 31, 2026',
+    title: 'Java Intermediate',
+    description: 'Completed the course, demonstrating theoretical and practical understanding of Java.',
+    image: '/certificates/java-intermediate.jpg',
+    certificateUrl: '/certificates/java-intermediate.pdf',
+  },
+  {
+    id: 'build-event-driven-java-azure',
+    issuer: 'Microsoft Learn',
+    completionDate: 'November 5, 2026',
+    title: 'Build a real-time event-driven Java solution in Azure',
+    description: 'Completed the Microsoft Learn course on building a real-time event-driven Java solution in Azure.',
+    certificateUrl: '/certificates/build-real-time-event-driven-java-azure.pdf',
+  },
+  {
+    id: 'containerize-java-app-azure',
+    issuer: 'Microsoft Learn',
+    completionDate: 'November 5, 2026',
+    title: 'Containerize and deploy a Java app to Azure',
+    description: 'Completed the Microsoft Learn course on containerizing and deploying a Java app to Azure.',
+    certificateUrl: '/certificates/containerize-deploy-java-app-azure.pdf',
+  },
+];
+
+const projectCategories = [
+  { id: 'all', label: 'All Projects' },
+  { id: 'ai_ml', label: 'AI & ML' },
+  { id: 'fullstack', label: 'Full-Stack' },
+  { id: 'desktop', label: 'Desktop Apps' },
+  { id: 'ui_ux', label: 'UI/UX' },
+  { id: 'devops', label: 'DevOps & CI/CD' },
+] as const;
+
+type ProjectCategoryId = Exclude<(typeof projectCategories)[number]['id'], 'all'>;
+type ProjectFilterId = (typeof projectCategories)[number]['id'];
+
 interface Project {
   id: string;
   title: string;
   subtitle?: string;
-  categories: string[];
+  categories: ProjectCategoryId[];
   description: string;
   overview: string;
   longDescription: string;
@@ -581,11 +708,313 @@ function IphoneMockup({
   );
 }
 
+function CertificationCarousel({
+  items,
+  prefersReducedMotion,
+}: {
+  items: Certification[];
+  prefersReducedMotion: boolean;
+}) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const dragState = useRef<{ pointerId: number; startX: number; startScrollLeft: number; moved: boolean } | null>(null);
+  const suppressClick = useRef(false);
+  const slideCount = Math.max(items.length, 1);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [pageStarts, setPageStarts] = useState<number[]>([0]);
+
+  const getPageStarts = () => {
+    const track = trackRef.current;
+    if (!track || track.children.length < 2) return [0];
+
+    const slides = Array.from(track.children) as HTMLElement[];
+    const firstSlide = slides[0];
+    const gap = Number.parseFloat(window.getComputedStyle(track).columnGap) || 0;
+    const slidePitch = firstSlide.getBoundingClientRect().width + gap;
+    const step = Math.max(1, Math.floor((track.clientWidth + gap) / slidePitch));
+    const maxScroll = track.scrollWidth - track.clientWidth;
+    const trackLeft = track.getBoundingClientRect().left;
+    const lastPageStart = slides.reduce<number>((nearest, slide, index) => {
+      const position = slide.getBoundingClientRect().left - trackLeft + track.scrollLeft;
+      const nearestPosition = slides[nearest].getBoundingClientRect().left - trackLeft + track.scrollLeft;
+      return Math.abs(position - maxScroll) < Math.abs(nearestPosition - maxScroll) ? index : nearest;
+    }, 0);
+
+    const starts: number[] = [];
+    for (let index = 0; index < lastPageStart; index += step) starts.push(index);
+    if (starts[starts.length - 1] !== lastPageStart) starts.push(lastPageStart);
+    return starts;
+  };
+
+  const scrollToSlide = (index: number) => {
+    const track = trackRef.current;
+    const slide = track?.children.item(index);
+    if (!track || !(slide instanceof HTMLElement)) return;
+    const left = slide.getBoundingClientRect().left - track.getBoundingClientRect().left + track.scrollLeft;
+    track.scrollTo({ left, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+    setActiveIndex(index);
+  };
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+
+    const updateActiveIndex = () => {
+      const slides = Array.from(track.children);
+      if (slides.length === 0) return;
+
+      const starts = getPageStarts();
+      setPageStarts(current => current.length === starts.length && current.every((start, index) => start === starts[index])
+        ? current
+        : starts);
+      const trackLeft = track.getBoundingClientRect().left;
+      const nearestStart = starts.reduce((nearest, index) => {
+        const slidePosition = (slides[index] as HTMLElement).getBoundingClientRect().left
+          - trackLeft
+          + track.scrollLeft;
+        const nearestPosition = (slides[nearest] as HTMLElement).getBoundingClientRect().left
+          - trackLeft
+          + track.scrollLeft;
+        return Math.abs(slidePosition - track.scrollLeft) < Math.abs(nearestPosition - track.scrollLeft)
+          ? index
+          : nearest;
+      }, starts[0]);
+
+      setActiveIndex(nearestStart);
+    };
+
+    updateActiveIndex();
+    track.addEventListener('scroll', updateActiveIndex, { passive: true });
+    const resizeObserver = new ResizeObserver(updateActiveIndex);
+    resizeObserver.observe(track);
+    return () => {
+      track.removeEventListener('scroll', updateActiveIndex);
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    const handlePointerMove = (event: PointerEvent) => {
+      const drag = dragState.current;
+      const track = trackRef.current;
+      if (!drag || !track || event.pointerId !== drag.pointerId) return;
+
+      const distance = event.clientX - drag.startX;
+      if (Math.abs(distance) > 5) drag.moved = true;
+      if (!drag.moved) return;
+
+      event.preventDefault();
+      track.scrollLeft = drag.startScrollLeft - distance;
+    };
+
+    const handlePointerUp = (event: PointerEvent) => {
+      const drag = dragState.current;
+      if (!drag || event.pointerId !== drag.pointerId) return;
+
+      if (drag.moved) {
+        suppressClick.current = true;
+        window.setTimeout(() => {
+          suppressClick.current = false;
+        }, 0);
+      }
+
+      dragState.current = null;
+      if (trackRef.current) trackRef.current.style.cursor = '';
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointercancel', handlePointerUp);
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerUp);
+    };
+  }, []);
+
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== 'mouse' || event.button !== 0) return;
+    if (event.target instanceof Element && event.target.closest('a, button')) return;
+
+    dragState.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startScrollLeft: event.currentTarget.scrollLeft,
+      moved: false,
+    };
+    event.currentTarget.style.cursor = 'grab';
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.target instanceof HTMLElement && event.target.closest('a, button')) return;
+    const pageIndex = Math.max(pageStarts.indexOf(activeIndex), 0);
+    if (event.key === 'ArrowLeft' && pageIndex > 0) {
+      event.preventDefault();
+      scrollToSlide(pageStarts[pageIndex - 1]);
+    }
+    if (event.key === 'ArrowRight' && pageIndex < pageStarts.length - 1) {
+      event.preventDefault();
+      scrollToSlide(pageStarts[pageIndex + 1]);
+    }
+  };
+
+  return (
+    <div>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <p className="max-w-2xl text-sm leading-relaxed text-[var(--text-secondary)]">
+          Continuous learning and professional development across software engineering, AI, and technology.
+        </p>
+        <div className="flex items-center gap-3">
+          <span className="min-w-[4rem] text-center font-mono text-xs font-semibold text-[var(--text-secondary)]" aria-live="polite">
+            {String(activeIndex + 1).padStart(2, '0')} / {String(slideCount).padStart(2, '0')}
+          </span>
+          <button
+            type="button"
+            onClick={() => scrollToSlide(pageStarts[Math.max(pageStarts.indexOf(activeIndex) - 1, 0)])}
+            disabled={pageStarts.indexOf(activeIndex) <= 0}
+            aria-label="Previous certificate"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border-strong)] bg-[var(--bg-card)] text-[var(--text-primary)] transition-colors hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-[var(--border-strong)] disabled:hover:text-[var(--text-primary)]"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              const nextPage = pageStarts.indexOf(activeIndex) + 1;
+              if (nextPage < pageStarts.length) scrollToSlide(pageStarts[nextPage]);
+            }}
+            disabled={pageStarts.indexOf(activeIndex) >= pageStarts.length - 1}
+            aria-label="Next certificate"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border-strong)] bg-[var(--bg-card)] text-[var(--text-primary)] transition-colors hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-[var(--border-strong)] disabled:hover:text-[var(--text-primary)]"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      <div
+        ref={trackRef}
+        role="region"
+        aria-label="Certificates and learning"
+        tabIndex={0}
+        onPointerDown={handlePointerDown}
+        onClickCapture={event => {
+          if (!suppressClick.current) return;
+          event.preventDefault();
+          event.stopPropagation();
+          suppressClick.current = false;
+        }}
+        onKeyDown={handleKeyDown}
+        className="certification-carousel-track flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain pb-3 outline-none focus-visible:rounded-xl"
+        style={{ scrollbarWidth: 'none' }}
+      >
+        {items.length > 0 ? items.map((item, index) => (
+          <motion.article
+            key={item.id}
+            initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.15 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.4, delay: prefersReducedMotion ? 0 : Math.min(index * 0.06, 0.24), ease: [0.16, 1, 0.3, 1] }}
+            className="group min-h-[430px] w-full shrink-0 snap-start overflow-hidden rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent-border)] hover:shadow-[var(--shadow-card-hover)] sm:w-[calc((100%-1rem)/2)] lg:w-[31%]"
+          >
+            <div className="flex aspect-[16/10] items-center justify-center overflow-hidden border-b border-[var(--border-color)] bg-[var(--bg-alt)]">
+              {item.image ? (
+                <img
+                  src={item.image}
+                  alt={`${item.title} certificate`}
+                  loading="lazy"
+                  draggable={false}
+                  className="h-full w-full object-contain"
+                />
+              ) : item.certificateUrl?.toLowerCase().endsWith('.pdf') ? (
+                <iframe
+                  src={`${item.certificateUrl}#page=1&toolbar=0&navpanes=0`}
+                  title={`${item.title} certificate preview`}
+                  loading="lazy"
+                  className="h-full w-full border-0 bg-white"
+                />
+              ) : (
+                <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-[radial-gradient(ellipse_at_center,var(--accent-subtle),transparent_68%)] text-[var(--text-muted)]">
+                  <Award className="h-10 w-10 text-[var(--accent-primary)]" aria-hidden="true" />
+                  <span className="font-mono text-[10px] font-semibold tracking-[0.2em]">CERTIFICATE</span>
+                </div>
+              )}
+            </div>
+            <div className="flex min-h-[238px] flex-col p-5">
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <span className="text-xs font-semibold text-[var(--accent-primary)]">{item.issuer}</span>
+                {item.completionDate && (
+                  <span className="shrink-0 font-mono text-[10px] text-[var(--text-muted)]">{item.completionDate}</span>
+                )}
+              </div>
+              <h3 className="font-display text-lg font-bold leading-snug text-[var(--text-primary)] [overflow-wrap:anywhere]">
+                {item.title}
+              </h3>
+              <p className="mt-2 flex-1 text-xs leading-relaxed text-[var(--text-secondary)]">{item.description}</p>
+              {item.certificateUrl ? (
+                <a
+                  href={item.certificateUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-5 inline-flex w-fit items-center gap-2 rounded-lg border border-[var(--border-strong)] px-3.5 py-2.5 text-xs font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)]"
+                >
+                  View Certificate <ArrowUpRight className="h-3.5 w-3.5" />
+                </a>
+              ) : (
+                <span className="mt-5 inline-flex w-fit cursor-not-allowed items-center gap-2 rounded-lg border border-[var(--border-color)] px-3.5 py-2.5 text-xs font-semibold text-[var(--text-muted)]">
+                  Certificate file unavailable
+                </span>
+              )}
+            </div>
+          </motion.article>
+        )) : (
+          <article className="min-h-[430px] w-full shrink-0 snap-start overflow-hidden rounded-2xl border border-dashed border-[var(--border-strong)] bg-[var(--bg-card)] sm:w-[calc((100%-1rem)/2)] lg:w-[31%]">
+            <div className="flex aspect-[16/10] items-center justify-center border-b border-[var(--border-color)] bg-[var(--bg-alt)]">
+              <div className="flex flex-col items-center gap-3 text-center">
+                <Award className="h-10 w-10 text-[var(--accent-primary)]" aria-hidden="true" />
+                <span className="font-mono text-[10px] font-semibold tracking-[0.2em] text-[var(--text-muted)]">CERTIFICATE PREVIEW</span>
+              </div>
+            </div>
+            <div className="flex min-h-[238px] flex-col justify-center p-5">
+              <p className="text-xs font-semibold text-[var(--accent-primary)]">Your learning journey</p>
+              <h3 className="mt-2 font-display text-lg font-bold text-[var(--text-primary)]">Add your first certificate</h3>
+              <p className="mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">
+                Add verified certificate details and a certificate image or link to display your learning here.
+              </p>
+              <span className="mt-5 inline-flex w-fit cursor-not-allowed items-center gap-2 rounded-lg border border-[var(--border-color)] px-3.5 py-2.5 text-xs font-semibold text-[var(--text-muted)]">
+                Certificate details not provided
+              </span>
+            </div>
+          </article>
+        )}
+      </div>
+
+      <div className="mt-5 flex justify-center gap-2" aria-label="Certificate pagination">
+        {pageStarts.map((start, pageIndex) => (
+          <button
+            key={items[start]?.id ?? 'empty'}
+            type="button"
+            onClick={() => scrollToSlide(start)}
+            disabled={items.length === 0}
+            aria-label={`Go to certificate ${start + 1}`}
+            aria-current={activeIndex === start ? 'true' : undefined}
+            className={`h-2.5 rounded-full transition-all duration-300 disabled:cursor-default ${
+              activeIndex === start
+                ? 'w-7 bg-[var(--accent-primary)]'
+                : 'w-2.5 bg-[var(--border-strong)] hover:bg-[var(--accent-border)]'
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
   );
   const [displayedTitle, setDisplayedTitle] = useState(HERO_TITLES[0]);
+  const [activeSection, setActiveSection] = useState('hero');
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -594,6 +1023,22 @@ export default function App() {
     updatePreference();
     mediaQuery.addEventListener('change', updatePreference);
     return () => mediaQuery.removeEventListener('change', updatePreference);
+  }, []);
+
+  useEffect(() => {
+    const sectionIds = ['hero', 'about', 'skills', 'projects', 'certifications', 'education', 'contact'];
+    const sections = sectionIds
+      .map(id => document.getElementById(id))
+      .filter((section): section is HTMLElement => section !== null);
+    const observer = new IntersectionObserver(entries => {
+      const visibleSection = entries
+        .filter(entry => entry.isIntersecting)
+        .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+      if (visibleSection) setActiveSection(visibleSection.target.id);
+    }, { rootMargin: '-20% 0px -70% 0px' });
+
+    sections.forEach(section => observer.observe(section));
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -644,7 +1089,7 @@ export default function App() {
       lastName: 'LIVINGSAN',
       signatureName: 'RAJENDRAN LIVINGSAN',
       title: 'FULL-STACK DEVELOPER • AI & LLM ENTHUSIAST',
-      websiteUrl: '',
+      websiteUrl: 'https://livingsan.github.io/',
       socialHandle: '',
       contactEmail: 'livingsan0220@gmail.com',
       location: 'Colombo, Sri Lanka',
@@ -652,9 +1097,9 @@ export default function App() {
       bio: 'Building full-stack applications and AI-powered solutions that solve real-world problems. I develop responsive web applications, secure REST APIs, and data-driven systems using React, Java Spring Boot, Node.js, and Python. I also integrate locally hosted LLMs and RAG pipelines to build practical, privacy-conscious AI applications.',
       fullAbout: 'Building full-stack applications and AI-powered solutions that solve real-world problems. I develop responsive web applications, secure REST APIs, and data-driven systems using React, Java Spring Boot, Node.js, and Python. I also integrate locally hosted LLMs and RAG pipelines to build practical, privacy-conscious AI applications.',
       avatarUrl: '/assets/aistudio/profile.jpg',
-      github: 'https://github.com',
-      linkedin: 'https://linkedin.com',
-      twitter: 'https://twitter.com',
+      github: 'https://github.com/Livingsan',
+      linkedin: 'https://www.linkedin.com/in/rlivingsan22/',
+      twitter: 'https://livingsan.github.io/',
       gpa: '3.92 / 4.0',
       gpaLabel: 'Cumulative GPA',
       gpaSub: 'First Class Honours',
@@ -691,8 +1136,17 @@ export default function App() {
         if (!parsed.contactPhone || parsed.contactPhone.includes('555') || parsed.contactPhone === '+1 (555) 019-2834') {
           parsed.contactPhone = '+94 77 000 0000';
         }
-        if (parsed.websiteUrl && parsed.websiteUrl.includes('reallygreatsite')) {
-          parsed.websiteUrl = '';
+        if (!parsed.websiteUrl || parsed.websiteUrl.includes('reallygreatsite') || parsed.websiteUrl === '') {
+          parsed.websiteUrl = 'https://livingsan.github.io/';
+        }
+        if (!parsed.github || parsed.github === 'https://github.com') {
+          parsed.github = 'https://github.com/Livingsan';
+        }
+        if (!parsed.linkedin || parsed.linkedin === 'https://linkedin.com' || parsed.linkedin.includes('linkedin.com/in/rlivingsan22/')) {
+          parsed.linkedin = 'https://www.linkedin.com/in/rlivingsan22/';
+        }
+        if (!parsed.twitter || parsed.twitter.includes('twitter.com') || parsed.twitter.trim() === 'https://livingsan.github.io/') {
+          parsed.twitter = 'https://livingsan.github.io/';
         }
         if (parsed.socialHandle && parsed.socialHandle.includes('reallygreatsite')) {
           parsed.socialHandle = '';
@@ -761,11 +1215,13 @@ export default function App() {
     activeImgIndex: number;
   } | null>(null);
   const [copiedEmail, setCopiedEmail] = useState(false);
-  const [activeTab, setActiveTab] = useState<'all' | 'ai_ml' | 'fullstack' | 'desktop' | 'ui_ux' | 'devops'>('all');
+  const [activeTab, setActiveTab] = useState<ProjectFilterId>('all');
   const [projectDeviceMode, setProjectDeviceMode] = useState<'duo' | 'phone'>('duo');
   const [skillCategoryFilter, setSkillCategoryFilter] = useState<SkillCategoryId>('full-stack');
   const skillHoverTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const projectHoverTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activeSkillCategory = skillCategories.find(category => category.id === skillCategoryFilter) ?? skillCategories[0];
+  const activeProjectCategory = projectCategories.find(category => category.id === activeTab) ?? projectCategories[0];
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navigateCaseStudyScreenshot = (offset: -1 | 1) => {
@@ -846,8 +1302,21 @@ export default function App() {
     setSkillCategoryFilter(current => current === categoryId ? current : categoryId);
   };
 
+  const cancelProjectHover = () => {
+    if (projectHoverTimeout.current !== null) {
+      clearTimeout(projectHoverTimeout.current);
+      projectHoverTimeout.current = null;
+    }
+  };
+
+  const activateProjectCategory = (categoryId: ProjectFilterId) => {
+    cancelProjectHover();
+    setActiveTab(current => current === categoryId ? current : categoryId);
+  };
+
   useEffect(() => () => {
     if (skillHoverTimeout.current !== null) clearTimeout(skillHoverTimeout.current);
+    if (projectHoverTimeout.current !== null) clearTimeout(projectHoverTimeout.current);
   }, []);
 
   // Form states
@@ -876,7 +1345,7 @@ export default function App() {
   const projectsData: Project[] = [
     {
       id: 'p1',
-      title: 'Liv TaskFlow — AI-Enhanced Task Management System',
+      title: 'Liv TaskFlow —AI Powered Task Management System',
       subtitle: 'A full-stack task management platform combining project workflows, local AI assistance, and automated development workflows.',
       categories: ['desktop', 'fullstack', 'ai_ml', 'devops'],
       description: 'Cross-platform task and project management platform featuring AI-powered task prioritization, interactive Kanban boards, Docker containerization, and GitHub Actions CI/CD.',
@@ -926,7 +1395,8 @@ export default function App() {
         { category: 'AI and DevOps', technologies: 'Ollama Mistral · Docker · GitHub Actions' }
       ],
       demoUrl: 'https://github.com',
-      githubUrl: 'https://github.com',
+      githubUrl: 'https://github.com/Livingsan/Task-management.git', 
+
       featured: true,
       metrics: 'Desktop & Web AI TaskFlow'
     },
@@ -980,13 +1450,13 @@ export default function App() {
         { category: 'Backend and database', technologies: 'PHP · MySQL · Apache Server · XAMPP' }
       ],
       demoUrl: 'https://github.com',
-      githubUrl: 'https://github.com',
+      githubUrl: 'https://github.com/Livingsan/-LIXN-LEE-E-Commerce-Platform.git',
       featured: true,
       metrics: 'Full-Stack PHP E-Commerce'
     },
     {
       id: 'p3',
-      title: 'LIVPos — Intelligent Point of Sale & Inventory Management System',
+      title: 'LIVPos — AI Powered Point of Sale & Inventory Management System',
       subtitle: 'LIVPos — Intelligent Retail Checkout & Multi-Branch Stock Control with Local Mistral 7B AI',
       categories: ['fullstack', 'ai_ml'],
       description: 'A full-stack point-of-sale and inventory management application designed to streamline retail checkout, stock control, and business operations with local Ollama AI demand forecasting.',
@@ -1035,13 +1505,13 @@ export default function App() {
         { category: 'AI and Forecasting', technologies: 'Ollama Mistral 7B (On-Device Private Inference)' }
       ],
       demoUrl: 'https://github.com',
-      githubUrl: 'https://github.com',
+      githubUrl: 'https://github.com/Livingsan/Liv-pos-system.git',
       featured: true,
       metrics: 'Spring Boot & Local AI POS'
     },
     {
       id: 'p4',
-      title: 'LivCare — Doctor Appointment Booking System',
+      title: 'LivCare — AI Powered Doctor Appointment Booking System',
       subtitle: 'Full-Stack Healthcare Web Application for Doctor Discovery & Scheduling',
       categories: ['fullstack', 'ai_ml'],
       description: 'A full-stack healthcare web application that simplifies doctor discovery and appointment scheduling with role-based dashboards for patients, doctors, and administrators.',
@@ -1089,7 +1559,7 @@ export default function App() {
         { category: 'Backend and database', technologies: 'MongoDB · Express.js · Node.js · Mongoose · JWT · bcryptjs' }
       ],
       demoUrl: 'https://github.com',
-      githubUrl: 'https://github.com',
+      githubUrl: 'https://github.com/Livingsan/livCare-booking-system.git',
       featured: true,
       metrics: 'Healthcare & Scheduling'
     },
@@ -1150,7 +1620,7 @@ export default function App() {
         { category: 'AI and RAG', technologies: 'Ollama · Llama 3.2 · ChromaDB · RAG Architecture' }
       ],
       demoUrl: 'https://github.com',
-      githubUrl: 'https://github.com',
+      githubUrl: 'https://github.com/Livingsan/Liv-Edu-Learning-System.git',
       featured: true,
       metrics: 'RAG & Agentic AI'
     },
@@ -1205,7 +1675,7 @@ export default function App() {
         { category: 'AI and Inference', technologies: 'Ollama Local Models · Safety Screening' }
       ],
       demoUrl: 'https://github.com',
-      githubUrl: 'https://github.com',
+      githubUrl: 'https://github.com/Livingsan/AI-Fitness-System.git',
       featured: true,
       metrics: 'AI Fitness & Health'
     },
@@ -1260,7 +1730,7 @@ export default function App() {
         { category: 'Database and Security', technologies: 'SQLite · PBKDF2-HMAC-SHA256 · CSV Data Utilities' }
       ],
       demoUrl: 'https://github.com',
-      githubUrl: 'https://github.com',
+      githubUrl: 'https://github.com/Livingsan/LIV-Hotel-Desktop-System.git',
       featured: true,
       metrics: 'Desktop & Web Hotel ERP'
     },
@@ -1311,8 +1781,8 @@ export default function App() {
         { category: 'Design Suite', technologies: 'Figma · FigJam · Auto Layout 5.0 · Interactive Variants' },
         { category: 'Design Architecture', technologies: 'Atomic Design · Design Tokens · WCAG AAA Standards' }
       ],
-      demoUrl: 'https://github.com',
-      githubUrl: 'https://github.com',
+      demoUrl: 'https://www.figma.com/proto/Mxu0dVmDT2AClkeK26g9FS/FitnestX-Mobile-App?node-id=426-141&starting-point-node-id=426%3A141&t=JWFc6ipdDG2DWmws-1',
+      githubUrl: 'https://www.figma.com/proto/Mxu0dVmDT2AClkeK26g9FS/FitnestX-Mobile-App?node-id=426-141&starting-point-node-id=426%3A141&t=JbfC1tftLJJAd3wQ-1',
       featured: true,
       metrics: 'Figma UI/UX Design'
     }
@@ -1381,12 +1851,13 @@ export default function App() {
 
           {/* Center Navigation Links */}
           <nav className="hidden lg:flex items-center space-x-8 text-xs uppercase tracking-widest font-semibold text-[var(--text-secondary)]">
-            <a href="#hero" className="hover:text-[var(--accent-primary)] transition-colors">Home</a>
-            <a href="#about" className="hover:text-[var(--accent-primary)] transition-colors">About</a>
-            <a href="#skills" className="hover:text-[var(--accent-primary)] transition-colors">Skills</a>
-            <a href="#projects" className="hover:text-[var(--accent-primary)] transition-colors">Projects</a>
-            <a href="#education" className="hover:text-[var(--accent-primary)] transition-colors">Education</a>
-            <a href="#contact" className="hover:text-[var(--accent-primary)] transition-colors">Contact</a>
+            <a href="#hero" className={`transition-colors ${activeSection === 'hero' ? 'text-[var(--accent-primary)]' : 'hover:text-[var(--accent-primary)]'}`}>Home</a>
+            <a href="#about" className={`transition-colors ${activeSection === 'about' ? 'text-[var(--accent-primary)]' : 'hover:text-[var(--accent-primary)]'}`}>About</a>
+            <a href="#skills" className={`transition-colors ${activeSection === 'skills' ? 'text-[var(--accent-primary)]' : 'hover:text-[var(--accent-primary)]'}`}>Skills</a>
+            <a href="#projects" className={`transition-colors ${activeSection === 'projects' ? 'text-[var(--accent-primary)]' : 'hover:text-[var(--accent-primary)]'}`}>Projects</a>
+            <a href="#certifications" className={`transition-colors ${activeSection === 'certifications' ? 'text-[var(--accent-primary)]' : 'hover:text-[var(--accent-primary)]'}`}>Certifications</a>
+            <a href="#education" className={`transition-colors ${activeSection === 'education' ? 'text-[var(--accent-primary)]' : 'hover:text-[var(--accent-primary)]'}`}>Education</a>
+            <a href="#contact" className={`transition-colors ${activeSection === 'contact' ? 'text-[var(--accent-primary)]' : 'hover:text-[var(--accent-primary)]'}`}>Contact</a>
           </nav>
 
           {/* Top Right Controls - Social Links & Theme Switcher */}
@@ -1406,28 +1877,31 @@ export default function App() {
             </button>
 
             <a 
-              href={profile.github || "https://github.com"} 
+              href={profile.github || "https://github.com/Livingsan"} 
               target="_blank" 
               rel="noopener noreferrer"
               aria-label="GitHub Profile"
+              title="GitHub Profile"
               className="max-[359px]:hidden w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[var(--bg-card)] border border-[var(--border-strong)] hover:border-[var(--accent-primary)] text-[var(--text-primary)] hover:text-white hover:bg-[var(--accent-primary)] flex items-center justify-center transition-all shadow-sm active:scale-95"
             >
               <Github className="w-4 h-4 sm:w-5 sm:h-5" />
             </a>
             <a 
-              href={profile.linkedin || "https://linkedin.com"} 
+              href={profile.linkedin ? (profile.linkedin.startsWith('http') ? profile.linkedin : `https://${profile.linkedin}`) : "https://www.linkedin.com/in/rlivingsan22/"} 
               target="_blank" 
               rel="noopener noreferrer"
               aria-label="LinkedIn Profile"
+              title="LinkedIn Profile"
               className="max-[359px]:hidden w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[var(--bg-card)] border border-[var(--border-strong)] hover:border-[var(--accent-primary)] text-[var(--text-primary)] hover:text-white hover:bg-[var(--accent-primary)] flex items-center justify-center transition-all shadow-sm active:scale-95"
             >
               <Linkedin className="w-4 h-4 sm:w-5 sm:h-5" />
             </a>
             <a 
-              href={profile.websiteUrl ? (profile.websiteUrl.startsWith('http') ? profile.websiteUrl : `https://${profile.websiteUrl}`) : "#contact"} 
-              target={profile.websiteUrl ? "_blank" : "_self"} 
+              href={profile.websiteUrl ? (profile.websiteUrl.startsWith('http') ? profile.websiteUrl : `https://${profile.websiteUrl}`) : "https://livingsan.github.io/"} 
+              target="_blank" 
               rel="noopener noreferrer"
-              aria-label="Contact or Portfolio Website"
+              aria-label="Portfolio Website"
+              title="Portfolio Website"
               className="max-[359px]:hidden w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[var(--bg-card)] border border-[var(--border-strong)] hover:border-[var(--accent-primary)] text-[var(--text-primary)] hover:text-white hover:bg-[var(--accent-primary)] flex items-center justify-center transition-all shadow-sm active:scale-95"
             >
               <Globe className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -1447,15 +1921,47 @@ export default function App() {
         {/* Mobile menu dropdown */}
         {mobileMenuOpen && (
           <div className="lg:hidden bg-[var(--bg-card)] border-b border-[var(--border-color)] px-6 py-4 space-y-3 text-sm shadow-xl">
-            <a href="#hero" onClick={() => setMobileMenuOpen(false)} className="block text-[var(--text-primary)] hover:text-[var(--accent-primary)] font-medium">Home</a>
-            <a href="#about" onClick={() => setMobileMenuOpen(false)} className="block text-[var(--text-primary)] hover:text-[var(--accent-primary)] font-medium">About</a>
-            <a href="#skills" onClick={() => setMobileMenuOpen(false)} className="block text-[var(--text-primary)] hover:text-[var(--accent-primary)] font-medium">Skills</a>
-            <a href="#projects" onClick={() => setMobileMenuOpen(false)} className="block text-[var(--text-primary)] hover:text-[var(--accent-primary)] font-medium">Projects</a>
-            <a href="#education" onClick={() => setMobileMenuOpen(false)} className="block text-[var(--text-primary)] hover:text-[var(--accent-primary)] font-medium">Education</a>
-            <a href="#contact" onClick={() => setMobileMenuOpen(false)} className="block text-[var(--text-primary)] hover:text-[var(--accent-primary)] font-medium">Contact</a>
+            <a href="#hero" onClick={() => setMobileMenuOpen(false)} className={`block font-medium ${activeSection === 'hero' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)] hover:text-[var(--accent-primary)]'}`}>Home</a>
+            <a href="#about" onClick={() => setMobileMenuOpen(false)} className={`block font-medium ${activeSection === 'about' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)] hover:text-[var(--accent-primary)]'}`}>About</a>
+            <a href="#skills" onClick={() => setMobileMenuOpen(false)} className={`block font-medium ${activeSection === 'skills' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)] hover:text-[var(--accent-primary)]'}`}>Skills</a>
+            <a href="#projects" onClick={() => setMobileMenuOpen(false)} className={`block font-medium ${activeSection === 'projects' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)] hover:text-[var(--accent-primary)]'}`}>Projects</a>
+            <a href="#certifications" onClick={() => setMobileMenuOpen(false)} className={`block font-medium ${activeSection === 'certifications' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)] hover:text-[var(--accent-primary)]'}`}>Certifications</a>
+            <a href="#education" onClick={() => setMobileMenuOpen(false)} className={`block font-medium ${activeSection === 'education' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)] hover:text-[var(--accent-primary)]'}`}>Education</a>
+            <a href="#contact" onClick={() => setMobileMenuOpen(false)} className={`block font-medium ${activeSection === 'contact' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)] hover:text-[var(--accent-primary)]'}`}>Contact</a>
 
             <div className="pt-2 border-t border-[var(--border-color)] flex items-center justify-between">
-              <span className="text-xs font-mono text-[var(--text-secondary)]">Theme Mode</span>
+              <div className="flex items-center gap-2">
+                <a
+                  href={profile.github || "https://github.com/Livingsan"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="GitHub Profile"
+                  title="GitHub Profile"
+                  className="p-2 rounded-lg bg-[var(--bg-tag)] border border-[var(--border-color)] text-[var(--text-primary)] hover:text-[var(--accent-primary)] transition-colors"
+                >
+                  <Github className="w-4 h-4" />
+                </a>
+                <a
+                  href={profile.linkedin ? (profile.linkedin.startsWith('http') ? profile.linkedin : `https://${profile.linkedin}`) : "https://www.linkedin.com/in/rlivingsan22/"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="LinkedIn Profile"
+                  title="LinkedIn Profile"
+                  className="p-2 rounded-lg bg-[var(--bg-tag)] border border-[var(--border-color)] text-[var(--text-primary)] hover:text-[var(--accent-primary)] transition-colors"
+                >
+                  <Linkedin className="w-4 h-4" />
+                </a>
+                <a
+                  href={profile.websiteUrl ? (profile.websiteUrl.startsWith('http') ? profile.websiteUrl : `https://${profile.websiteUrl}`) : "https://livingsan.github.io/"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Portfolio Website"
+                  title="Portfolio Website"
+                  className="p-2 rounded-lg bg-[var(--bg-tag)] border border-[var(--border-color)] text-[var(--text-primary)] hover:text-[var(--accent-primary)] transition-colors"
+                >
+                  <Globe className="w-4 h-4" />
+                </a>
+              </div>
               <button
                 onClick={toggleTheme}
                 className="px-3 py-1.5 rounded-lg bg-[var(--bg-tag)] text-xs font-medium text-[var(--text-primary)] flex items-center gap-2 border border-[var(--border-color)] cursor-pointer"
@@ -1567,6 +2073,40 @@ export default function App() {
               >
                 <span>Contact</span>
               </a>
+
+              {/* Social Quick Action Buttons in Home Section */}
+              <div className="flex items-center gap-2 pt-2 sm:pt-0 sm:pl-2 sm:border-l sm:border-[var(--border-strong)]">
+                <a
+                  href={profile.github || "https://github.com/Livingsan"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="GitHub Profile"
+                  title="GitHub Profile"
+                  className="w-11 h-11 rounded-xl bg-[var(--bg-card)] border border-[var(--border-strong)] hover:border-[var(--accent-primary)] text-[var(--text-primary)] hover:text-white hover:bg-[var(--accent-primary)] flex items-center justify-center transition-all duration-200 shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-95"
+                >
+                  <Github className="w-4 h-4 sm:w-5 sm:h-5" />
+                </a>
+                <a
+                  href={profile.linkedin ? (profile.linkedin.startsWith('http') ? profile.linkedin : `https://${profile.linkedin}`) : "https://www.linkedin.com/in/rlivingsan22/"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="LinkedIn Profile"
+                  title="LinkedIn Profile"
+                  className="w-11 h-11 rounded-xl bg-[var(--bg-card)] border border-[var(--border-strong)] hover:border-[var(--accent-primary)] text-[var(--text-primary)] hover:text-white hover:bg-[var(--accent-primary)] flex items-center justify-center transition-all duration-200 shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-95"
+                >
+                  <Linkedin className="w-4 h-4 sm:w-5 sm:h-5" />
+                </a>
+                <a
+                  href={profile.websiteUrl ? (profile.websiteUrl.startsWith('http') ? profile.websiteUrl : `https://${profile.websiteUrl}`) : "https://livingsan.github.io/"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Portfolio Website"
+                  title="Portfolio Website"
+                  className="w-11 h-11 rounded-xl bg-[var(--bg-card)] border border-[var(--border-strong)] hover:border-[var(--accent-primary)] text-[var(--text-primary)] hover:text-white hover:bg-[var(--accent-primary)] flex items-center justify-center transition-all duration-200 shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-95"
+                >
+                  <Globe className="w-4 h-4 sm:w-5 sm:h-5" />
+                </a>
+              </div>
 
             </div>
 
@@ -1912,14 +2452,19 @@ export default function App() {
       {/* ================= PROJECTS SHOWCASE SECTION ================= */}
       <section id="projects" className="py-20 bg-[var(--bg-alt)] border-y border-[var(--border-color)] transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="flex items-center space-x-3 mb-4">
-            <span className="w-8 h-[2px] bg-[var(--accent-primary)]"></span>
-            <span className="text-xs uppercase tracking-widest text-[var(--accent-primary)] font-semibold font-mono">03 · SELECTED WORKS</span>
-          </div>
+          <motion.div
+            initial={prefersReducedMotion ? false : { opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.55, ease: [0.16, 1, 0.3, 1] }}
+            className="mb-6"
+          >
+            <div className="flex items-center space-x-3 mb-4">
+              <span className="w-8 h-[2px] bg-[var(--accent-primary)]"></span>
+              <span className="text-xs uppercase tracking-widest text-[var(--accent-primary)] font-semibold font-mono">03 · SELECTED WORKS</span>
+            </div>
 
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-10 gap-6">
-            <div>
+            <div className="mb-8">
               <h2 className="text-3xl sm:text-4xl font-display font-bold text-[var(--text-primary)]">
                 Featured Projects &amp; Case Studies
               </h2>
@@ -1928,11 +2473,87 @@ export default function App() {
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              {/* Device Presentation View Switcher (Duo vs Only Phone Screen) */}
+            <div
+              role="tablist"
+              aria-label="Project categories"
+              onPointerLeave={cancelProjectHover}
+              className="flex w-full flex-nowrap gap-1.5 overflow-x-auto p-1.5 bg-[var(--bg-card)] border border-[var(--border-strong)] rounded-xl shadow-xs"
+            >
+              {projectCategories.map(category => {
+                const isActive = activeTab === category.id;
+                return (
+                  <button
+                    key={category.id}
+                    id={`project-tab-${category.id}`}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    aria-controls="project-category-panel"
+                    tabIndex={isActive ? 0 : -1}
+                    onPointerEnter={event => {
+                      cancelProjectHover();
+                      if (event.pointerType === 'touch' || isActive) return;
+                      projectHoverTimeout.current = setTimeout(() => {
+                        projectHoverTimeout.current = null;
+                        setActiveTab(current => current === category.id ? current : category.id);
+                      }, 120);
+                    }}
+                    onPointerLeave={cancelProjectHover}
+                    onFocus={() => activateProjectCategory(category.id)}
+                    onClick={() => activateProjectCategory(category.id)}
+                    onKeyDown={event => {
+                      const currentIndex = projectCategories.findIndex(item => item.id === category.id);
+                      let nextIndex: number | undefined;
+                      if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (currentIndex + 1) % projectCategories.length;
+                      if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (currentIndex - 1 + projectCategories.length) % projectCategories.length;
+                      if (nextIndex !== undefined) {
+                        event.preventDefault();
+                        const nextCategory = projectCategories[nextIndex];
+                        activateProjectCategory(nextCategory.id);
+                        document.getElementById(`project-tab-${nextCategory.id}`)?.focus();
+                      }
+                    }}
+                    className={`relative min-w-max shrink-0 rounded-lg px-3 py-2.5 text-xs font-semibold transition-colors duration-200 cursor-pointer lg:min-w-0 lg:flex-1 ${
+                      isActive
+                        ? 'text-[var(--text-primary)]'
+                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                    }`}
+                  >
+                    {isActive && (
+                      <motion.span
+                        layoutId="activeProjectTab"
+                        className="absolute inset-0 rounded-lg bg-[var(--accent-primary)] shadow-xs"
+                        transition={prefersReducedMotion
+                          ? { duration: 0 }
+                          : { type: 'spring', stiffness: 420, damping: 34 }}
+                      />
+                    )}
+                    <span className="relative z-10 block whitespace-nowrap">{category.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </motion.div>
+
+          <div
+            id="project-category-panel"
+            role="tabpanel"
+            aria-labelledby={`project-tab-${activeTab}`}
+            tabIndex={0}
+            className="focus-visible:rounded-xl"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+              <div className="flex items-center justify-between gap-3 min-w-36">
+                <h3 className="font-display text-lg font-bold text-[var(--text-primary)]">{activeProjectCategory.label}</h3>
+                <span className="text-[10px] sm:text-xs font-mono text-[var(--text-muted)]">
+                  {filteredProjects.length} projects
+                </span>
+              </div>
+
               {hasFilteredMobileImages && (
                 <div className="flex items-center gap-1 p-1 bg-[var(--bg-card)] border border-[var(--border-strong)] rounded-xl shadow-xs text-xs font-mono">
                   <button
+                    type="button"
                     onClick={() => setProjectDeviceMode('duo')}
                     className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
                       projectDeviceMode === 'duo'
@@ -1945,6 +2566,7 @@ export default function App() {
                     <span className="text-[11px] font-semibold">Desktop + Phone</span>
                   </button>
                   <button
+                    type="button"
                     onClick={() => setProjectDeviceMode('phone')}
                     className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
                       projectDeviceMode === 'phone'
@@ -1958,40 +2580,27 @@ export default function App() {
                   </button>
                 </div>
               )}
-
-              {/* Filter Tabs (Refined Segmented Control) */}
-              <div className="flex flex-wrap gap-1 p-1.5 bg-[var(--bg-card)] border border-[var(--border-strong)] rounded-xl shadow-xs">
-                {[
-                  { id: 'all', label: 'All Projects' },
-                  { id: 'ai_ml', label: 'AI & ML' },
-                  { id: 'fullstack', label: 'Full-Stack' },
-                  { id: 'desktop', label: 'Desktop Apps' },
-                  { id: 'ui_ux', label: 'UI/UX' },
-                  { id: 'devops', label: 'DevOps & CI/CD' }
-                ].map(tab => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                      activeTab === tab.id 
-                        ? 'bg-[var(--accent-primary)] text-white shadow-xs font-semibold' 
-                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tag)]'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
             </div>
-          </div>
 
-          {/* Project Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {filteredProjects.map((project) => (
-              <div 
-                key={project.id}
-                className="relative overflow-hidden group group/card bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl flex flex-col justify-between hover:border-[var(--accent-border)] transition-all duration-300 shadow-[var(--shadow-card)] hover:shadow-[0_14px_34px_rgba(200,29,37,0.14)] hover:-translate-y-1"
+            <AnimatePresence mode="popLayout" initial={false}>
+              <motion.div
+                key={activeTab}
+                initial={prefersReducedMotion ? false : { opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={prefersReducedMotion ? undefined : { opacity: 0 }}
+                transition={{ duration: prefersReducedMotion ? 0 : 0.2, ease: 'easeOut' }}
+                layout={!prefersReducedMotion}
+                className="grid grid-cols-1 md:grid-cols-2 gap-8"
               >
+                {filteredProjects.map((project) => (
+                  <motion.div
+                    key={project.id}
+                    initial={prefersReducedMotion ? false : { opacity: 0, y: 15, scale: 0.98 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    viewport={{ once: false, amount: 0.15 }}
+                    transition={{ duration: prefersReducedMotion ? 0 : 0.3, ease: [0.16, 1, 0.3, 1] }}
+                    className="relative overflow-hidden group group/card bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl flex flex-col justify-between hover:border-[var(--accent-border)] transition-all duration-300 shadow-[var(--shadow-card)] hover:shadow-[0_14px_34px_rgba(200,29,37,0.14)] hover:-translate-y-1"
+                  >
                 {/* Red hairline accent on card hover */}
                 <div className="absolute top-0 left-0 right-0 h-[3px] bg-[var(--accent-primary)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
 
@@ -2139,10 +2748,34 @@ export default function App() {
                     </button>
                   </div>
                 </div>
-              </div>
-            ))}
+                  </motion.div>
+                ))}
+              </motion.div>
+            </AnimatePresence>
           </div>
+        </div>
+      </section>
 
+      {/* ================= CERTIFICATIONS & LEARNING SECTION ================= */}
+      <section id="certifications" className="scroll-mt-20 py-20 bg-[var(--bg-main)] transition-colors duration-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={prefersReducedMotion ? false : { opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.55, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <div className="mb-4 flex items-center space-x-3">
+              <span className="h-[2px] w-8 bg-[var(--accent-primary)]" />
+              <span className="font-mono text-xs font-semibold uppercase tracking-widest text-[var(--accent-primary)]">
+                04 · CONTINUOUS LEARNING
+              </span>
+            </div>
+            <h2 className="mb-8 text-3xl font-display font-bold text-[var(--text-primary)] sm:text-4xl">
+              Certifications &amp; Learning
+            </h2>
+            <CertificationCarousel items={certifications} prefersReducedMotion={prefersReducedMotion} />
+          </motion.div>
         </div>
       </section>
 
@@ -2152,7 +2785,7 @@ export default function App() {
         
           <div className="flex items-center space-x-3 mb-4">
             <span className="w-8 h-[2px] bg-[var(--accent-primary)]"></span>
-            <span className="text-xs uppercase tracking-widest text-[var(--accent-primary)] font-semibold font-mono">04 · ACADEMIC JOURNEY</span>
+            <span className="text-xs uppercase tracking-widest text-[var(--accent-primary)] font-semibold font-mono">05 · ACADEMIC JOURNEY</span>
           </div>
 
           <h2 className="text-3xl sm:text-4xl font-display font-bold text-[var(--text-primary)] mb-12">
@@ -2287,7 +2920,7 @@ export default function App() {
           
           <div className="flex items-center space-x-3 mb-4">
             <span className="w-8 h-[2px] bg-[var(--accent-primary)]"></span>
-            <span className="text-xs uppercase tracking-widest text-[var(--accent-primary)] font-semibold font-mono">05 · LET'S CONNECT</span>
+            <span className="text-xs uppercase tracking-widest text-[var(--accent-primary)] font-semibold font-mono">06 · LET'S CONNECT</span>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
@@ -2351,13 +2984,34 @@ export default function App() {
               <div className="pt-4 border-t border-[var(--border-color)]">
                 <div className="text-xs uppercase tracking-wider text-[var(--text-muted)] mb-3 font-mono font-semibold">Social Connections</div>
                 <div className="flex items-center space-x-3">
-                  <a href={profile.github || 'https://github.com'} target="_blank" rel="noreferrer" className="p-3 bg-[var(--bg-card)] hover:bg-[var(--accent-primary)] border border-[var(--border-strong)] hover:border-[var(--accent-primary)] rounded-xl text-[var(--text-primary)] hover:text-white transition-all transform hover:-translate-y-0.5 shadow-xs" title="GitHub">
+                  <a 
+                    href={profile.github || 'https://github.com/Livingsan'} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="p-3 bg-[var(--bg-card)] hover:bg-[var(--accent-primary)] border border-[var(--border-strong)] hover:border-[var(--accent-primary)] rounded-xl text-[var(--text-primary)] hover:text-white transition-all transform hover:-translate-y-0.5 shadow-xs" 
+                    title="GitHub Profile"
+                    aria-label="GitHub Profile"
+                  >
                     <Github className="w-5 h-5" />
                   </a>
-                  <a href={profile.linkedin || 'https://linkedin.com'} target="_blank" rel="noreferrer" className="p-3 bg-[var(--bg-card)] hover:bg-[var(--accent-primary)] border border-[var(--border-strong)] hover:border-[var(--accent-primary)] rounded-xl text-[var(--text-primary)] hover:text-white transition-all transform hover:-translate-y-0.5 shadow-xs" title="LinkedIn">
+                  <a 
+                    href={profile.linkedin ? (profile.linkedin.startsWith('http') ? profile.linkedin : `https://${profile.linkedin}`) : 'https://www.linkedin.com/in/rlivingsan22/'} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="p-3 bg-[var(--bg-card)] hover:bg-[var(--accent-primary)] border border-[var(--border-strong)] hover:border-[var(--accent-primary)] rounded-xl text-[var(--text-primary)] hover:text-white transition-all transform hover:-translate-y-0.5 shadow-xs" 
+                    title="LinkedIn Profile"
+                    aria-label="LinkedIn Profile"
+                  >
                     <Linkedin className="w-5 h-5" />
                   </a>
-                  <a href={profile.twitter || 'https://twitter.com'} target="_blank" rel="noreferrer" className="p-3 bg-[var(--bg-card)] hover:bg-[var(--accent-primary)] border border-[var(--border-strong)] hover:border-[var(--accent-primary)] rounded-xl text-[var(--text-primary)] hover:text-white transition-all transform hover:-translate-y-0.5 shadow-xs" title="Portfolio / Web">
+                  <a 
+                    href={profile.websiteUrl ? (profile.websiteUrl.startsWith('http') ? profile.websiteUrl : `https://${profile.websiteUrl}`) : 'https://livingsan.github.io/'} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="p-3 bg-[var(--bg-card)] hover:bg-[var(--accent-primary)] border border-[var(--border-strong)] hover:border-[var(--accent-primary)] rounded-xl text-[var(--text-primary)] hover:text-white transition-all transform hover:-translate-y-0.5 shadow-xs" 
+                    title="Portfolio Website"
+                    aria-label="Portfolio Website"
+                  >
                     <Globe className="w-5 h-5" />
                   </a>
                 </div>
@@ -2387,7 +3041,7 @@ export default function App() {
                         required
                         value={formState.name}
                         onChange={e => setFormState({...formState, name: e.target.value})}
-                        placeholder="e.g., Alex Morgan"
+                        placeholder="e.g., Rajendran Livingsan"
                         className="w-full px-4 py-3 bg-[var(--bg-input)] border border-[var(--border-strong)] rounded-xl text-xs text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-primary)] focus:ring-1 focus:ring-[var(--accent-primary)] shadow-2xs transition-all"
                       />
                     </div>
@@ -2398,7 +3052,7 @@ export default function App() {
                         required
                         value={formState.email}
                         onChange={e => setFormState({...formState, email: e.target.value})}
-                        placeholder="e.g., alex@company.com"
+                        placeholder="e.g., rlivingsan@gmail.com"
                         className="w-full px-4 py-3 bg-[var(--bg-input)] border border-[var(--border-strong)] rounded-xl text-xs text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-primary)] focus:ring-1 focus:ring-[var(--accent-primary)] shadow-2xs transition-all"
                       />
                     </div>
@@ -2997,6 +3651,39 @@ export default function App() {
                   type="text"
                   value={profile.contactPhone || ''}
                   onChange={e => setProfile({...profile, contactPhone: e.target.value})}
+                  className="w-full px-3 py-2 bg-[var(--bg-input)] border border-[var(--border-strong)] rounded text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
+                />
+              </div>
+
+              {/* Website URL */}
+              <div className="space-y-1">
+                <label className="text-[var(--text-secondary)] font-medium">Portfolio / Website URL</label>
+                <input 
+                  type="text"
+                  value={profile.websiteUrl || ''}
+                  onChange={e => setProfile({...profile, websiteUrl: e.target.value})}
+                  className="w-full px-3 py-2 bg-[var(--bg-input)] border border-[var(--border-strong)] rounded text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
+                />
+              </div>
+
+              {/* GitHub URL */}
+              <div className="space-y-1">
+                <label className="text-[var(--text-secondary)] font-medium">GitHub Profile URL</label>
+                <input 
+                  type="text"
+                  value={profile.github || ''}
+                  onChange={e => setProfile({...profile, github: e.target.value})}
+                  className="w-full px-3 py-2 bg-[var(--bg-input)] border border-[var(--border-strong)] rounded text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
+                />
+              </div>
+
+              {/* LinkedIn URL */}
+              <div className="space-y-1">
+                <label className="text-[var(--text-secondary)] font-medium">LinkedIn Profile URL</label>
+                <input 
+                  type="text"
+                  value={profile.linkedin || ''}
+                  onChange={e => setProfile({...profile, linkedin: e.target.value})}
                   className="w-full px-3 py-2 bg-[var(--bg-input)] border border-[var(--border-strong)] rounded text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
                 />
               </div>

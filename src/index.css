@@ -123,6 +123,10 @@ body {
   transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.certification-carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
 /* Custom fine scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
