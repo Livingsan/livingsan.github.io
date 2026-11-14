@@ -735,23 +735,26 @@ function CertificationCarousel({
     const track = trackRef.current;
     if (!track || track.children.length < 2) return [0];
 
-    const slides = Array.from(track.children) as HTMLElement[];
+    const slides = (Array.from(track.children) as HTMLElement[]).filter(el => el && typeof el.getBoundingClientRect === 'function');
+    if (slides.length < 2) return [0];
+
     const firstSlide = slides[0];
     const gap = Number.parseFloat(window.getComputedStyle(track).columnGap) || 0;
-    const slidePitch = firstSlide.getBoundingClientRect().width + gap;
-    const step = Math.max(1, Math.floor((track.clientWidth + gap) / slidePitch));
-    const maxScroll = track.scrollWidth - track.clientWidth;
+    const slidePitch = Math.max((firstSlide?.getBoundingClientRect?.()?.width || 280) + gap, 1);
+    const step = Math.max(1, Math.floor(((track.clientWidth || 320) + gap) / slidePitch));
+    const maxScroll = Math.max(track.scrollWidth - track.clientWidth, 0);
     const trackLeft = track.getBoundingClientRect().left;
     const lastPageStart = slides.reduce<number>((nearest, slide, index) => {
-      const position = slide.getBoundingClientRect().left - trackLeft + track.scrollLeft;
-      const nearestPosition = slides[nearest].getBoundingClientRect().left - trackLeft + track.scrollLeft;
+      const nearestSlide = slides[nearest] || firstSlide;
+      const position = (slide?.getBoundingClientRect?.()?.left || 0) - trackLeft + track.scrollLeft;
+      const nearestPosition = (nearestSlide?.getBoundingClientRect?.()?.left || 0) - trackLeft + track.scrollLeft;
       return Math.abs(position - maxScroll) < Math.abs(nearestPosition - maxScroll) ? index : nearest;
     }, 0);
 
     const starts: number[] = [];
     for (let index = 0; index < lastPageStart; index += step) starts.push(index);
     if (starts[starts.length - 1] !== lastPageStart) starts.push(lastPageStart);
-    return starts;
+    return starts.length > 0 ? starts : [0];
   };
 
   const scrollToSlide = (index: number) => {
@@ -759,7 +762,15 @@ function CertificationCarousel({
     const slide = track?.children.item(index);
     if (!track || !(slide instanceof HTMLElement)) return;
     const left = slide.getBoundingClientRect().left - track.getBoundingClientRect().left + track.scrollLeft;
-    track.scrollTo({ left, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+    if (typeof track.scrollTo === 'function') {
+      try {
+        track.scrollTo({ left, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+      } catch (e) {
+        track.scrollLeft = left;
+      }
+    } else {
+      track.scrollLeft = left;
+    }
     setActiveIndex(index);
   };
 
@@ -768,36 +779,59 @@ function CertificationCarousel({
     if (!track) return;
 
     const updateActiveIndex = () => {
-      const slides = Array.from(track.children);
-      if (slides.length === 0) return;
+      try {
+        const slides = (Array.from(track.children) as HTMLElement[]).filter(el => el && typeof el.getBoundingClientRect === 'function');
+        if (slides.length === 0) return;
 
-      const starts = getPageStarts();
-      setPageStarts(current => current.length === starts.length && current.every((start, index) => start === starts[index])
-        ? current
-        : starts);
-      const trackLeft = track.getBoundingClientRect().left;
-      const nearestStart = starts.reduce((nearest, index) => {
-        const slidePosition = (slides[index] as HTMLElement).getBoundingClientRect().left
-          - trackLeft
-          + track.scrollLeft;
-        const nearestPosition = (slides[nearest] as HTMLElement).getBoundingClientRect().left
-          - trackLeft
-          + track.scrollLeft;
-        return Math.abs(slidePosition - track.scrollLeft) < Math.abs(nearestPosition - track.scrollLeft)
-          ? index
-          : nearest;
-      }, starts[0]);
+        const starts = getPageStarts();
+        setPageStarts(current => current.length === starts.length && current.every((start, index) => start === starts[index])
+          ? current
+          : starts);
+        const trackLeft = track.getBoundingClientRect().left;
+        const defaultStart = starts[0] ?? 0;
+        const nearestStart = starts.reduce((nearest, index) => {
+          const slide = slides[index];
+          const nearestSlide = slides[nearest] || slides[defaultStart];
+          if (!slide || !nearestSlide) return nearest;
+          const slidePosition = (slide.getBoundingClientRect?.()?.left || 0) - trackLeft + track.scrollLeft;
+          const nearestPosition = (nearestSlide.getBoundingClientRect?.()?.left || 0) - trackLeft + track.scrollLeft;
+          return Math.abs(slidePosition - track.scrollLeft) < Math.abs(nearestPosition - track.scrollLeft)
+            ? index
+            : nearest;
+        }, defaultStart);
 
-      setActiveIndex(nearestStart);
+        setActiveIndex(nearestStart);
+      } catch (e) {
+        // Safe fallback in case of dynamic DOM shifts
+      }
     };
 
     updateActiveIndex();
     track.addEventListener('scroll', updateActiveIndex, { passive: true });
-    const resizeObserver = new ResizeObserver(updateActiveIndex);
-    resizeObserver.observe(track);
+    
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      try {
+        resizeObserver = new ResizeObserver(() => {
+          try {
+            updateActiveIndex();
+          } catch (e) {}
+        });
+        resizeObserver.observe(track);
+      } catch (e) {
+        window.addEventListener('resize', updateActiveIndex, { passive: true });
+      }
+    } else {
+      window.addEventListener('resize', updateActiveIndex, { passive: true });
+    }
+
     return () => {
       track.removeEventListener('scroll', updateActiveIndex);
-      resizeObserver.disconnect();
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      } else {
+        window.removeEventListener('resize', updateActiveIndex);
+      }
     };
   }, []);
 
@@ -811,7 +845,11 @@ function CertificationCarousel({
       if (Math.abs(distance) > 5) drag.moved = true;
       if (!drag.moved) return;
 
-      event.preventDefault();
+      if (event.cancelable) {
+        try {
+          event.preventDefault();
+        } catch (e) {}
+      }
       track.scrollLeft = drag.startScrollLeft - distance;
     };
 
@@ -1012,35 +1050,51 @@ function CertificationCarousel({
 }
 
 export default function App() {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  );
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
+    try {
+      return typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+    } catch (e) {
+      return false;
+    }
+  });
   const [displayedTitle, setDisplayedTitle] = useState(HERO_TITLES[0]);
   const [activeSection, setActiveSection] = useState('hero');
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const updatePreference = () => setPrefersReducedMotion(mediaQuery.matches);
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    try {
+      const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+      if (!mediaQuery) return;
+      const updatePreference = () => setPrefersReducedMotion(mediaQuery.matches);
 
-    updatePreference();
-    mediaQuery.addEventListener('change', updatePreference);
-    return () => mediaQuery.removeEventListener('change', updatePreference);
+      updatePreference();
+      if (typeof mediaQuery.addEventListener === 'function') {
+        mediaQuery.addEventListener('change', updatePreference);
+        return () => mediaQuery.removeEventListener('change', updatePreference);
+      } else if (typeof (mediaQuery as any).addListener === 'function') {
+        (mediaQuery as any).addListener(updatePreference);
+        return () => (mediaQuery as any).removeListener(updatePreference);
+      }
+    } catch (e) {}
   }, []);
 
   useEffect(() => {
-    const sectionIds = ['hero', 'about', 'skills', 'projects', 'certifications', 'education', 'contact'];
-    const sections = sectionIds
-      .map(id => document.getElementById(id))
-      .filter((section): section is HTMLElement => section !== null);
-    const observer = new IntersectionObserver(entries => {
-      const visibleSection = entries
-        .filter(entry => entry.isIntersecting)
-        .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
-      if (visibleSection) setActiveSection(visibleSection.target.id);
-    }, { rootMargin: '-20% 0px -70% 0px' });
+    if (typeof window === 'undefined' || typeof IntersectionObserver === 'undefined') return;
+    try {
+      const sectionIds = ['hero', 'about', 'skills', 'projects', 'certifications', 'education', 'contact'];
+      const sections = sectionIds
+        .map(id => document.getElementById(id))
+        .filter((section): section is HTMLElement => section !== null);
+      const observer = new IntersectionObserver(entries => {
+        const visibleSection = entries
+          .filter(entry => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (visibleSection) setActiveSection(visibleSection.target.id);
+      }, { rootMargin: '-20% 0px -70% 0px' });
 
-    sections.forEach(section => observer.observe(section));
-    return () => observer.disconnect();
+      sections.forEach(section => observer.observe(section));
+      return () => observer.disconnect();
+    } catch (e) {}
   }, []);
 
   useEffect(() => {
@@ -1116,69 +1170,73 @@ export default function App() {
       commitsSub: 'Ollama, RAG & LLMs'
     };
 
-    const saved = localStorage.getItem('portfolio_profile');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const saved = localStorage.getItem('portfolio_profile');
+        if (saved) {
+          const parsed = JSON.parse(saved);
 
-        // ── Migration v4: force-update contact email, phone & project count ──────────────
-        // Bumping _migrationVersion guarantees the live site clears any
-        // stale localStorage value regardless of what was previously stored.
-        if (!parsed._migrationVersion || parsed._migrationVersion < 4) {
-          parsed.contactEmail = 'rlivingsan@gmail.com';
-          parsed.contactPhone = '0743113022';
-          parsed.projectsCount = '9+';
-          parsed.projectsSub = 'POS, LMS, Gym, AI Apps';
-          parsed._migrationVersion = 4;
-        }
+          // ── Migration v4: force-update contact email, phone & project count ──────────────
+          // Bumping _migrationVersion guarantees the live site clears any
+          // stale localStorage value regardless of what was previously stored.
+          if (!parsed._migrationVersion || parsed._migrationVersion < 4) {
+            parsed.contactEmail = 'rlivingsan@gmail.com';
+            parsed.contactPhone = '0743113022';
+            parsed.projectsCount = '9+';
+            parsed.projectsSub = 'POS, LMS, Gym, AI Apps';
+            parsed._migrationVersion = 4;
+          }
 
-        // Migrate old names
-        if (parsed.firstName === 'RAJ' || parsed.signatureName === 'RAJ LIV' || !parsed.firstName) {
-          parsed.firstName = 'RAJENDRAN';
-          parsed.lastName = 'LIVINGSAN';
-          parsed.signatureName = 'RAJENDRAN LIVINGSAN';
+          // Migrate old names
+          if (parsed.firstName === 'RAJ' || parsed.signatureName === 'RAJ LIV' || !parsed.firstName) {
+            parsed.firstName = 'RAJENDRAN';
+            parsed.lastName = 'LIVINGSAN';
+            parsed.signatureName = 'RAJENDRAN LIVINGSAN';
+          }
+          // Migrate location (including San Francisco & other legacy placeholders)
+          if (!parsed.location || parsed.location.includes('San Francisco') || parsed.location === 'Colombo onsite & Remote') {
+            parsed.location = 'Colombo, Sri Lanka';
+          }
+          // Migrate email (including hello@reallygreatsite.com and example placeholders)
+          if (!parsed.contactEmail || parsed.contactEmail.includes('reallygreatsite') || parsed.contactEmail === 'your.email@example.com' || parsed.contactEmail === 'rlivingsan.com') {
+            parsed.contactEmail = 'rlivingsan@gmail.com';
+          }
+          // Migrate phone
+          if (!parsed.contactPhone || parsed.contactPhone.includes('555') || parsed.contactPhone === '+1 (555) 019-2834' || parsed.contactPhone === '+94 74 3113022') {
+            parsed.contactPhone = '0743113022';
+          }
+          if (!parsed.websiteUrl || parsed.websiteUrl.includes('reallygreatsite') || parsed.websiteUrl === '') {
+            parsed.websiteUrl = 'https://livingsan.github.io/';
+          }
+          if (!parsed.github || parsed.github === 'https://github.com') {
+            parsed.github = 'https://github.com/Livingsan';
+          }
+          if (!parsed.linkedin || parsed.linkedin === 'https://linkedin.com' || parsed.linkedin.includes('linkedin.com/in/rlivingsan22/')) {
+            parsed.linkedin = 'https://www.linkedin.com/in/rlivingsan22/';
+          }
+          if (!parsed.twitter || parsed.twitter.includes('twitter.com') || parsed.twitter.trim() === 'https://livingsan.github.io/') {
+            parsed.twitter = 'https://livingsan.github.io/';
+          }
+          if (parsed.socialHandle && parsed.socialHandle.includes('reallygreatsite')) {
+            parsed.socialHandle = '';
+          }
+          // Replace outdated or empty default photo paths with the current public image.
+          if (
+            !parsed.avatarUrl ||
+            parsed.avatarUrl === '/assets/aistudio/your-profile.png' ||
+            (typeof parsed.avatarUrl === 'string' && parsed.avatarUrl.includes('portfolio_avatar'))
+          ) {
+            parsed.avatarUrl = defaultData.avatarUrl;
+          }
+          const updated = { ...defaultData, ...parsed, avatarUrl: parsed.avatarUrl || defaultData.avatarUrl };
+          try {
+            localStorage.setItem('portfolio_profile', JSON.stringify(updated));
+          } catch (e) {}
+          return updated;
         }
-        // Migrate location (including San Francisco & other legacy placeholders)
-        if (!parsed.location || parsed.location.includes('San Francisco') || parsed.location === 'Colombo onsite & Remote') {
-          parsed.location = 'Colombo, Sri Lanka';
-        }
-        // Migrate email (including hello@reallygreatsite.com and example placeholders)
-        if (!parsed.contactEmail || parsed.contactEmail.includes('reallygreatsite') || parsed.contactEmail === 'your.email@example.com' || parsed.contactEmail === 'rlivingsan.com') {
-          parsed.contactEmail = 'rlivingsan@gmail.com';
-        }
-        // Migrate phone
-        if (!parsed.contactPhone || parsed.contactPhone.includes('555') || parsed.contactPhone === '+1 (555) 019-2834' || parsed.contactPhone === '+94 74 3113022') {
-          parsed.contactPhone = '0743113022';
-        }
-        if (!parsed.websiteUrl || parsed.websiteUrl.includes('reallygreatsite') || parsed.websiteUrl === '') {
-          parsed.websiteUrl = 'https://livingsan.github.io/';
-        }
-        if (!parsed.github || parsed.github === 'https://github.com') {
-          parsed.github = 'https://github.com/Livingsan';
-        }
-        if (!parsed.linkedin || parsed.linkedin === 'https://linkedin.com' || parsed.linkedin.includes('linkedin.com/in/rlivingsan22/')) {
-          parsed.linkedin = 'https://www.linkedin.com/in/rlivingsan22/';
-        }
-        if (!parsed.twitter || parsed.twitter.includes('twitter.com') || parsed.twitter.trim() === 'https://livingsan.github.io/') {
-          parsed.twitter = 'https://livingsan.github.io/';
-        }
-        if (parsed.socialHandle && parsed.socialHandle.includes('reallygreatsite')) {
-          parsed.socialHandle = '';
-        }
-        // Replace outdated or empty default photo paths with the current public image.
-        if (
-          !parsed.avatarUrl ||
-          parsed.avatarUrl === '/assets/aistudio/your-profile.png' ||
-          (typeof parsed.avatarUrl === 'string' && parsed.avatarUrl.includes('portfolio_avatar'))
-        ) {
-          parsed.avatarUrl = defaultData.avatarUrl;
-        }
-        const updated = { ...defaultData, ...parsed, avatarUrl: parsed.avatarUrl || defaultData.avatarUrl };
-        localStorage.setItem('portfolio_profile', JSON.stringify(updated));
-        return updated;
-      } catch (e) {
-        return defaultData;
       }
+    } catch (e) {
+      return defaultData;
     }
     return defaultData;
   });

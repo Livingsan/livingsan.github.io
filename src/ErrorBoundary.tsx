@@ -35,12 +35,32 @@ export class ErrorBoundary extends Component<Props, State> {
             <p className="text-xs text-[rgba(224,213,193,0.7)] leading-relaxed">
               We encountered a display issue while rendering the application. Tap below to reload.
             </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="w-full py-3 px-4 rounded-xl bg-[#c81d25] text-white font-semibold text-xs tracking-wider uppercase transition hover:bg-[#b0171e]"
-            >
-              Reload Page
-            </button>
+            {this.state.error && (
+              <details className="text-left text-[11px] font-mono text-red-400 bg-black/60 p-3 rounded-lg overflow-auto max-h-36 border border-red-500/20">
+                <summary className="cursor-pointer text-xs font-semibold text-red-300 mb-1">View error details</summary>
+                <div className="whitespace-pre-wrap">{this.state.error.toString()}</div>
+              </details>
+            )}
+            <div className="space-y-2 pt-2">
+              <button
+                onClick={() => window.location.reload()}
+                className="w-full py-3 px-4 rounded-xl bg-[#c81d25] hover:bg-[#b0171e] text-white font-semibold text-xs tracking-wider uppercase transition shadow-md"
+              >
+                Reload Page
+              </button>
+              <button
+                onClick={() => {
+                  try {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                  } catch (e) {}
+                  window.location.reload();
+                }}
+                className="w-full py-2.5 px-4 rounded-xl bg-transparent border border-[rgba(224,213,193,0.2)] hover:border-[rgba(224,213,193,0.4)] text-[rgba(224,213,193,0.8)] text-xs font-semibold transition"
+              >
+                Reset Stored Cache & Reload
+              </button>
+            </div>
           </div>
         </div>
       );
