@@ -119,6 +119,7 @@ const certifications: Certification[] = [
     completionDate: 'November 5, 2026',
     title: 'Develop an AI agent with Microsoft Agent Framework',
     description: 'Completed the Microsoft Learn course on developing an AI agent with Microsoft Agent Framework.',
+    image: '/certificates/develop-ai-agent-microsoft-agent-framework.jpg',
     certificateUrl: '/certificates/develop-ai-agent-microsoft-agent-framework.pdf',
   },
   {
@@ -127,6 +128,7 @@ const certifications: Certification[] = [
     completionDate: 'November 5, 2026',
     title: 'Plan an AI agent solution',
     description: 'Completed the Microsoft Learn course on planning an AI agent solution.',
+    image: '/certificates/plan-ai-agent-solution.jpg',
     certificateUrl: '/certificates/plan-ai-agent-solution.pdf',
   },
   {
@@ -135,6 +137,7 @@ const certifications: Certification[] = [
     completionDate: 'November 5, 2026',
     title: 'Discover Azure AI Agents with A2A',
     description: 'Completed the Microsoft Learn course on Azure AI Agents with A2A.',
+    image: '/certificates/discover-azure-ai-agents-a2a.jpg',
     certificateUrl: '/certificates/discover-azure-ai-agents-a2a.pdf',
   },
   {
@@ -143,6 +146,7 @@ const certifications: Certification[] = [
     completionDate: 'November 4, 2026',
     title: 'Work smarter with AI',
     description: 'Completed the Microsoft Learn course on working smarter with AI.',
+    image: '/certificates/work-smarter-with-ai.jpg',
     certificateUrl: '/certificates/work-smarter-with-ai.pdf',
   },
   {
@@ -205,6 +209,7 @@ const certifications: Certification[] = [
     completionDate: 'November 5, 2026',
     title: 'Build a real-time event-driven Java solution in Azure',
     description: 'Completed the Microsoft Learn course on building a real-time event-driven Java solution in Azure.',
+    image: '/certificates/build-real-time-event-driven-java-azure.jpg',
     certificateUrl: '/certificates/build-real-time-event-driven-java-azure.pdf',
   },
   {
@@ -213,6 +218,7 @@ const certifications: Certification[] = [
     completionDate: 'November 5, 2026',
     title: 'Containerize and deploy a Java app to Azure',
     description: 'Completed the Microsoft Learn course on containerizing and deploying a Java app to Azure.',
+    image: '/certificates/containerize-deploy-java-app-azure.jpg',
     certificateUrl: '/certificates/containerize-deploy-java-app-azure.pdf',
   },
 ];
@@ -915,8 +921,8 @@ function CertificationCarousel({
             key={item.id}
             initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.15 }}
-            transition={{ duration: prefersReducedMotion ? 0 : 0.4, delay: prefersReducedMotion ? 0 : Math.min(index * 0.06, 0.24), ease: [0.16, 1, 0.3, 1] }}
+            viewport={{ once: true, amount: 0.02 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.35, delay: prefersReducedMotion ? 0 : Math.min(index * 0.04, 0.2), ease: [0.16, 1, 0.3, 1] }}
             className="group min-h-[430px] w-full shrink-0 snap-start overflow-hidden rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent-border)] hover:shadow-[var(--shadow-card-hover)] sm:w-[calc((100%-1rem)/2)] lg:w-[31%]"
           >
             <div className="flex aspect-[16/10] items-center justify-center overflow-hidden border-b border-[var(--border-color)] bg-[var(--bg-alt)]">
@@ -927,13 +933,6 @@ function CertificationCarousel({
                   loading="lazy"
                   draggable={false}
                   className="h-full w-full object-contain"
-                />
-              ) : item.certificateUrl?.toLowerCase().endsWith('.pdf') ? (
-                <iframe
-                  src={`${item.certificateUrl}#page=1&toolbar=0&navpanes=0`}
-                  title={`${item.title} certificate preview`}
-                  loading="lazy"
-                  className="h-full w-full border-0 bg-white"
                 />
               ) : (
                 <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-[radial-gradient(ellipse_at_center,var(--accent-subtle),transparent_68%)] text-[var(--text-muted)]">
@@ -1186,7 +1185,11 @@ export default function App() {
 
   // Save profile edits to localStorage
   useEffect(() => {
-    localStorage.setItem('portfolio_profile', JSON.stringify(profile));
+    try {
+      localStorage.setItem('portfolio_profile', JSON.stringify(profile));
+    } catch (e) {
+      // Ignore localStorage restrictions in private browsing modes
+    }
   }, [profile]);
 
   // Modal controls
@@ -1195,8 +1198,12 @@ export default function App() {
   // Theme state with localStorage persistence (defaults to 'dark' to preserve current design)
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('portfolio_theme');
-      if (saved === 'dark' || saved === 'light') return saved;
+      try {
+        const saved = localStorage.getItem('portfolio_theme');
+        if (saved === 'dark' || saved === 'light') return saved;
+      } catch (e) {
+        // Fall back to default
+      }
     }
     return 'dark';
   });
@@ -1211,7 +1218,11 @@ export default function App() {
       root.classList.remove('light');
       root.setAttribute('data-theme', 'dark');
     }
-    localStorage.setItem('portfolio_theme', theme);
+    try {
+      localStorage.setItem('portfolio_theme', theme);
+    } catch (e) {
+      // Ignore in private browsing
+    }
   }, [theme]);
 
   // Subtle smooth theme toggle handler
@@ -1238,6 +1249,7 @@ export default function App() {
   const activeSkillCategory = skillCategories.find(category => category.id === skillCategoryFilter) ?? skillCategories[0];
   const activeProjectCategory = projectCategories.find(category => category.id === activeTab) ?? projectCategories[0];
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isPhotoColorActive, setIsPhotoColorActive] = useState(false);
 
   const navigateCaseStudyScreenshot = (offset: -1 | 1) => {
     setModalActiveScreenshotIndex(currentIndex =>
@@ -2113,6 +2125,42 @@ export default function App() {
               ))}
             </div>
 
+            {/* Mobile Hero Portrait Card (Shown cleanly on mobile right below bio/badges, hidden on desktop where right column displays) */}
+            <div className="block lg:hidden my-5 max-w-[280px] min-[400px]:max-w-[320px] mx-auto w-full">
+              <div 
+                onClick={() => setIsPhotoColorActive(prev => !prev)}
+                title="Tap to toggle color"
+                className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden border border-[var(--border-strong)] bg-[var(--bg-card)] shadow-lg shadow-stone-900/[0.05] dark:shadow-black/50 group flex items-center justify-center p-2.5 cursor-pointer select-none active:scale-[0.98] transition-transform"
+              >
+                {profile.avatarUrl ? (
+                  <div className="relative w-full h-full rounded-xl overflow-hidden">
+                    <img 
+                      src={profile.avatarUrl} 
+                      alt="RAJENDRAN LIVINGSAN Portrait" 
+                      className={`w-full h-full object-cover object-[center_22%] transition-all duration-700 ${
+                        isPhotoColorActive
+                          ? 'grayscale-0 contrast-100'
+                          : 'grayscale contrast-125 group-hover:grayscale-0 group-hover:contrast-100 group-active:grayscale-0 group-active:contrast-100'
+                      }`}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-main)] via-transparent to-transparent opacity-80 z-10 pointer-events-none"></div>
+                  </div>
+                ) : (
+                  <div className="w-full h-full rounded-xl border border-[var(--border-color)] bg-gradient-to-b from-[var(--bg-card)] via-[var(--bg-card)] to-[var(--bg-tag)] relative flex flex-col items-center justify-center p-6 overflow-hidden select-none">
+                    <div className="relative z-10 w-20 h-20 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] flex items-center justify-center text-[var(--accent-primary)] mb-2 shadow-sm">
+                      <User className="w-10 h-10 stroke-[1.5]" />
+                    </div>
+                    <span className="relative z-10 font-['Unbounded'] font-bold text-xs tracking-wider text-[var(--text-primary)] uppercase">
+                      Rajendran Livingsan
+                    </span>
+                  </div>
+                )}
+                <div className="absolute bottom-4 left-4 right-4 z-20 p-2.5 bg-[var(--bg-card)]/95 backdrop-blur-md rounded-xl border border-[var(--border-color)] flex items-center justify-center text-xs shadow-md">
+                  <span className="text-xs font-mono text-[var(--text-secondary)]">Colombo, Sri Lanka</span>
+                </div>
+              </div>
+            </div>
+
             {/* Action Buttons Row */}
             <div className="flex flex-wrap items-center gap-3">
               
@@ -2182,16 +2230,24 @@ export default function App() {
           </div>
 
           {/* Right Column (Developer Workstation Photo / Image Frame) */}
-          <div className="lg:col-span-5 lg:col-start-8 lg:row-start-1 lg:row-span-2 lg:self-start relative flex justify-center lg:justify-end">
-            <div className="relative w-full max-w-[400px] aspect-[3/4] rounded-2xl overflow-hidden border border-[var(--border-strong)] bg-[var(--bg-card)] shadow-lg shadow-stone-900/[0.05] dark:shadow-black/50 group flex items-center justify-center p-2.5">
+          <div className="hidden lg:flex lg:col-span-5 lg:col-start-8 lg:row-start-1 lg:row-span-2 lg:self-start relative justify-end">
+            <div 
+              onClick={() => setIsPhotoColorActive(prev => !prev)}
+              title="Click or tap to toggle color"
+              className="relative w-full max-w-[400px] aspect-[3/4] rounded-2xl overflow-hidden border border-[var(--border-strong)] bg-[var(--bg-card)] shadow-lg shadow-stone-900/[0.05] dark:shadow-black/50 group flex items-center justify-center p-2.5 cursor-pointer select-none active:scale-[0.98] transition-transform"
+            >
               {profile.avatarUrl ? (
                 <div className="relative w-full h-full rounded-xl overflow-hidden">
                   <img 
                     src={profile.avatarUrl} 
                     alt="RAJENDRAN LIVINGSAN Portrait" 
-                    className="w-full h-full object-cover object-[center_22%] grayscale contrast-125 group-hover:grayscale-0 transition-all duration-700" 
+                    className={`w-full h-full object-cover object-[center_22%] transition-all duration-700 ${
+                      isPhotoColorActive
+                        ? 'grayscale-0 contrast-100'
+                        : 'grayscale contrast-125 group-hover:grayscale-0 group-hover:contrast-100 group-active:grayscale-0 group-active:contrast-100'
+                    }`}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-main)] via-transparent to-transparent opacity-80 z-10"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-main)] via-transparent to-transparent opacity-80 z-10 pointer-events-none"></div>
                 </div>
               ) : (
                 <div className="w-full h-full rounded-xl border border-[var(--border-color)] bg-gradient-to-b from-[var(--bg-card)] via-[var(--bg-card)] to-[var(--bg-tag)] relative flex flex-col items-center justify-center p-8 overflow-hidden select-none">
@@ -2244,17 +2300,25 @@ export default function App() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
-            {/* User Profile Image */}
-            <div className="lg:col-span-5 relative group flex justify-center lg:justify-start">
-              <div className="relative w-full max-w-[420px] rounded-2xl overflow-hidden border border-[var(--border-strong)] bg-[var(--bg-card)] aspect-square shadow-lg shadow-stone-900/[0.05] dark:shadow-black/50 group flex items-center justify-center p-2.5 lg:translate-y-2">
+            {/* User Profile Image (Hidden on mobile to eliminate stacked duplicate photo, shown on desktop) */}
+            <div className="hidden lg:flex lg:col-span-5 relative group justify-start">
+              <div 
+                onClick={() => setIsPhotoColorActive(prev => !prev)}
+                title="Click or tap to toggle color"
+                className="relative w-full max-w-[420px] rounded-2xl overflow-hidden border border-[var(--border-strong)] bg-[var(--bg-card)] aspect-square shadow-lg shadow-stone-900/[0.05] dark:shadow-black/50 group flex items-center justify-center p-2.5 lg:translate-y-2 cursor-pointer select-none active:scale-[0.98] transition-transform"
+              >
                 {profile.avatarUrl ? (
                   <div className="relative w-full h-full rounded-xl overflow-hidden">
                     <img 
                       src={profile.avatarUrl} 
                       alt="RAJENDRAN LIVINGSAN Profile"
-                      className="w-full h-full object-cover object-top grayscale contrast-125 group-hover:grayscale-0 transition-all duration-700" 
+                      className={`w-full h-full object-cover object-top transition-all duration-700 ${
+                        isPhotoColorActive
+                          ? 'grayscale-0 contrast-100'
+                          : 'grayscale contrast-125 group-hover:grayscale-0 group-hover:contrast-100 group-active:grayscale-0 group-active:contrast-100'
+                      }`}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-main)] via-transparent to-transparent opacity-60"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-main)] via-transparent to-transparent opacity-60 pointer-events-none"></div>
                   </div>
                 ) : (
                   <div className="w-full h-full rounded-xl border border-[var(--border-color)] bg-gradient-to-b from-[var(--bg-card)] via-[var(--bg-card)] to-[var(--bg-tag)] relative flex flex-col items-center justify-center p-8 overflow-hidden select-none">
@@ -2547,7 +2611,7 @@ export default function App() {
               role="tablist"
               aria-label="Project categories"
               onPointerLeave={cancelProjectHover}
-              className="flex w-full flex-nowrap gap-1.5 overflow-x-auto p-1.5 bg-[var(--bg-card)] border border-[var(--border-strong)] rounded-xl shadow-xs"
+              className="grid grid-cols-2 min-[420px]:grid-cols-3 sm:grid-cols-3 lg:flex lg:w-full gap-1.5 p-1.5 bg-[var(--bg-card)] border border-[var(--border-strong)] rounded-xl shadow-xs"
             >
               {projectCategories.map(category => {
                 const isActive = activeTab === category.id;
@@ -2583,7 +2647,7 @@ export default function App() {
                         document.getElementById(`project-tab-${nextCategory.id}`)?.focus();
                       }
                     }}
-                    className={`relative min-w-max shrink-0 rounded-lg px-3 py-2.5 text-xs font-semibold transition-colors duration-200 cursor-pointer lg:min-w-0 lg:flex-1 ${
+                    className={`relative min-w-0 w-full rounded-lg px-2.5 py-2.5 text-[11px] sm:text-xs font-semibold transition-colors duration-200 cursor-pointer text-center lg:flex-1 ${
                       isActive
                         ? 'text-[var(--text-primary)]'
                         : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -2598,7 +2662,7 @@ export default function App() {
                           : { type: 'spring', stiffness: 420, damping: 34 }}
                       />
                     )}
-                    <span className="relative z-10 block whitespace-nowrap">{category.label}</span>
+                    <span className="relative z-10 block whitespace-nowrap overflow-hidden text-ellipsis">{category.label}</span>
                   </button>
                 );
               })}
