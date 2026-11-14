@@ -81,6 +81,9 @@ import figmaSleepTrackerImg from './assets/images/figma_sleep_tracker.png';
 import figmaProgressPhotoImg from './assets/images/figma_progress_photo.png';
 import previewOneImg from './assets/images/project_preview_one_1786200263853.jpg';
 import previewTwoImg from './assets/images/project_preview_two_1786200278116.jpg';
+import fitlifeAdminDashboardImg from './assets/images/fitlife_admin_dashboard.png';
+import fitlifeHomeImg from './assets/images/fitlife_home.png';
+import fitlifeProgramDetailsImg from './assets/images/fitlife_program_details.png';
 
 export interface ProjectScreenshot {
   url: string;
@@ -1103,9 +1106,9 @@ export default function App() {
       gpa: '3.92 / 4.0',
       gpaLabel: 'Cumulative GPA',
       gpaSub: 'First Class Honours',
-      projectsCount: '8+',
+      projectsCount: '9+',
       projectsLabel: 'Full-Stack Projects',
-      projectsSub: 'POS, LMS, AI Apps',
+      projectsSub: 'POS, LMS, Gym, AI Apps',
       leetcode: '20+',
       leetcodeLabel: 'Core Tech Stack',
       leetcodeSub: 'React, Java, Node, Python',
@@ -1119,13 +1122,15 @@ export default function App() {
       try {
         const parsed = JSON.parse(saved);
 
-        // ── Migration v3: force-update contact email & phone ──────────────
+        // ── Migration v4: force-update contact email, phone & project count ──────────────
         // Bumping _migrationVersion guarantees the live site clears any
         // stale localStorage value regardless of what was previously stored.
-        if (!parsed._migrationVersion || parsed._migrationVersion < 3) {
+        if (!parsed._migrationVersion || parsed._migrationVersion < 4) {
           parsed.contactEmail = 'rlivingsan@gmail.com';
           parsed.contactPhone = '0743113022';
-          parsed._migrationVersion = 3;
+          parsed.projectsCount = '9+';
+          parsed.projectsSub = 'POS, LMS, Gym, AI Apps';
+          parsed._migrationVersion = 4;
         }
 
         // Migrate old names
@@ -1746,6 +1751,60 @@ export default function App() {
     },
     {
       id: 'p8',
+      title: 'FitLife: Full-Stack Enterprise Gym Management Platform',
+      subtitle: 'Multi-Tiered Gym & Fitness Management Ecosystem with JavaFX Desktop & Spring Boot REST API',
+      categories: ['desktop', 'fullstack'],
+      description: 'A multi-tiered, enterprise-grade gym and fitness management ecosystem built with a modern JavaFX Desktop Client and an isolated Spring Boot REST API backed by MongoDB.',
+      overview: 'A multi-tiered, enterprise-grade gym and fitness management ecosystem built with a modern JavaFX Desktop Client and an isolated Spring Boot REST API backed by MongoDB. The platform provides secure role-based access control (Admin & Member), real-time atomic class booking and capacity coordination, automated membership lifecycle management, trainer and staff administration, and comprehensive operational dashboards.',
+      longDescription: 'FitLife is engineered with a strict multi-tiered architecture where all direct database access and business logic are confined exclusively to the secure Spring Boot REST API. The desktop client operates as an unprivileged presentation tier communicating over typed HTTP services with stateless JWT Bearer token authentication. Features include salted PBKDF2-HMAC-SHA256 password hashing with 600,000 iterations, MongoDB document-level atomic capacity counters preventing double-booking race conditions, recurring class and program schedule management, member self-service workflows, staff administration, and vulnerability-hardened Apache Tomcat 10.1.61 and Jackson BOM 2.18.12 dependencies.',
+      image: fitlifeAdminDashboardImg,
+      displayUrl: 'fitlife.internal/admin-dashboard',
+      screenshots: [
+        {
+          url: fitlifeAdminDashboardImg,
+          tabLabel: 'Admin Dashboard',
+          title: 'Picture 1 — Centralized Operational & Administrative Dashboard',
+          caption: 'Real-time business intelligence aggregating total active members, staff headcount, active programs, total reservations, and facility revenue metrics.'
+        },
+        {
+          url: fitlifeHomeImg,
+          tabLabel: 'Welcome Portal',
+          title: 'Picture 2 — Main Landing & Welcome Portal',
+          caption: 'Intuitive desktop welcome screen featuring streamlined member authentication, session context initialization, and self-service portal navigation.'
+        },
+        {
+          url: fitlifeProgramDetailsImg,
+          tabLabel: 'Programs & Schedules',
+          title: 'Picture 3 — Class Catalog, Weekly Schedules & Booking Availability',
+          caption: 'Interactive fitness program browser with certified trainer allocations, weekly recurring time slots, difficulty ratings, and atomic capacity indicators.'
+        }
+      ],
+      tags: ['Java 21', 'JavaFX', 'Spring Boot 3.5', 'Spring Security', 'MongoDB', 'JWT', 'Maven'],
+      keyFeatures: [
+        { title: 'Member Self-Service & Onboarding', description: 'Self-service registration with automated profile initialization, client validation, and password strength checks.' },
+        { title: 'Interactive Class & Program Browser', description: 'Real-time visibility into available gym programs, weekly workout sessions, trainer allocations, and difficulty levels.' },
+        { title: 'Atomic Booking Engine', description: 'Claim workout slots with atomic capacity verification and race-condition prevention, ensuring classes never exceed facility limits.' },
+        { title: 'Personal Booking Management', description: 'View active bookings, track session dates and times, and cancel or reschedule bookings with instant slot release.' },
+        { title: 'Centralized Operational Dashboard', description: 'Real-time business intelligence aggregating active members, staff headcount, active programs, reservations, and revenue.' },
+        { title: 'Member Directory & Profile Oversight', description: 'Full CRUD member administration with membership renewal processing and emergency administrative password resets.' },
+        { title: 'Staff & Trainer Administration', description: 'Maintain staff rosters, role designations, trainer specializations, and contact details with full auditability.' },
+        { title: 'Tier Decoupling & Stateless JWT Security', description: 'Zero database credentials exist within the desktop client; all interactions use stateless JWT Bearer token authentication and PBKDF2 hashing.' }
+      ],
+      techStackBreakdown: [
+        { category: 'Desktop Client', technologies: 'Java 21 · JavaFX 21.0.6 · SceneBuilder FXML · CSS3' },
+        { category: 'API Backend Framework', technologies: 'Spring Boot 3.5.16 · Spring Security 6.5.11 · Spring Data MongoDB' },
+        { category: 'Serialization & Security', technologies: 'Jackson 2.18.12 (Hardened) · Java JWT (HMAC-SHA256) · PBKDF2 Hashing (600k iterations)' },
+        { category: 'Database & Embedded Container', technologies: 'MongoDB 6.0+ (NoSQL Document Store) · Apache Tomcat 10.1.61 (Hardened)' },
+        { category: 'Build & Quality Assurance', technologies: 'Apache Maven 3.9.9 (mvnw) · JUnit 5 · Mockito 5.24.0 · Byte Buddy 1.18.14' }
+      ],
+      note: 'This project is engineered with an isolated, multi-tiered architecture where all direct database access and business logic are confined exclusively to the secure Spring Boot REST API. The desktop client never receives or stores database credentials, operating purely over typed HTTP services with stateless JWT Bearer token authentication.',
+      demoUrl: 'https://github.com/Livingsan/LIV-FITNESS-Desktop.git',
+      githubUrl: 'https://github.com/Livingsan/LIV-FITNESS-Desktop.git',
+      featured: true,
+      metrics: 'JavaFX & Spring Boot Enterprise ERP'
+    },
+    {
+      id: 'p9',
       title: 'Fitness App — UI/UX Design in Figma',
       subtitle: 'High-Fidelity Mobile Design System & Interactive Prototypes',
       categories: ['ui_ux'],
@@ -2242,7 +2301,8 @@ export default function App() {
               </h2>
 
               <p className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
-                Final-year Software Engineering student passionate about developing end-to-end web applications and integrating local AI architecture. Skilled in building responsive interfaces and robust backends—from Spring Boot POS engines to RAG-powered learning platforms. Ready to bring clean code and practical problem-solving to a software engineering team.
+             Software Engineering graduate passionate about developing end-to-end web applications and integrating AI-powered solutions. Skilled in building responsive interfaces, robust backend systems, and locally hosted AI applications, with hands-on experience developing Spring Boot-based POS systems and RAG-powered learning platforms. Eager to contribute clean, maintainable code and practical problem-solving skills to a software engineering team.
+             
               </p>
 
               {/* Stat Boxes */}
